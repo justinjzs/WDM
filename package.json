@@ -19,7 +19,8 @@
     "koa-router": "^5.4.0",
     "koa-session": "^3.4.0",
     "koa-static": "^2.0.0",
-    "mime-types": "^2.1.13"
+    "mime-types": "^2.1.13",
+    "pg": "^6.1.2"
   },
   "devDependencies": {
     "babel-core": "^6.21.0",

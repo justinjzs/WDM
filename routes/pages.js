@@ -1,7 +1,7 @@
 const route = require('koa-router')();
-const handler = require('../controller/pages');
+const pages = require('../controller/pages');
 
 
-route.get('/', handler.index); 
+route.get('/', pages.index); 
 
 module.exports = route;
