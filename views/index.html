@@ -6,6 +6,11 @@
 <body>
   <div class='container' id='root'>
   </div>
-  <script src="bundle.js"></script>
+  <form action='/home' method='post' enctype='multipart/form-data'>
+      <input type='file', name='files', multiple='multiple' />
+      <input type="hidden" name="path" value="xxx/foo"> 
+      <button type='submit'>Upload</button>
+  </from>
+  <!-- <script src="bundle.js"></script> -->
 </body>
 </html>

@@ -7,7 +7,7 @@ route.get('/home/:key', download) //下载
      .del('/home/:key', switchDel); //删除
 
 function *download() {
-  this.body = "download";
+  yield api.download(this);
 }
 
 function *switchPut() {
@@ -19,7 +19,7 @@ function *switchDel() {
 }
 
 function *switchPost() {
-  api.upLoad(this);
+  yield api.upLoad(this);
 }
 
 module.exports = route;

@@ -8,7 +8,8 @@ const render =  views(path.join(__dirname, '../views'), {
 
 
 module.exports = {
-  index: function *() {
+  index: function *(next) {
     this.body = yield render('index');
+    yield next;
   }
 }
