@@ -1,16 +1,46 @@
 <!-- index.html -->
 <html>
+
 <head>
   <meta charset="utf-8">
 </head>
+
 <body>
   <div class='container' id='root'>
+ </div>
+ <!-- <form action='/upload' method='post' enctype='multipart/form-data'>
+    <input type='file'  name='files'  multiple='multiple' />
+    <input type="hidden" name="path" value="/">
+    <button type='submit'>Upload</button>
+    </from> -->   
+  <div>
+    <button type='click' onclick="rename()">Remove</button>
+    <button type='click' onclick="download()">Download</button>
   </div>
-  <form action='/home' method='post' enctype='multipart/form-data'>
-      <input type='file', name='files', multiple='multiple' />
-      <input type="hidden" name="path" value="xxx/foo"> 
-      <button type='submit'>Upload</button>
-  </from>
   <!-- <script src="bundle.js"></script> -->
+  <script>
+    function rename() {
+      const payload = {
+        key: 16,
+        name: 'pic.jpg',
+        isdir: false
+      }
+      const headers = {
+        'Accept': 'application/json, text/plain, */*',
+        'Content-Type': 'application/json'
+      }
+      const init = {
+        headers,
+        method: 'PUT',
+        body: JSON.stringify(payload)
+      };
+      fetch('/rename', init).then(res => console.log(res));
+    }
+
+    function download() {
+      fetch('/download?key=16').then(res => console.log(res));
+    }
+  </script>
 </body>
+
 </html>
