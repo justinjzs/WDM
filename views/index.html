@@ -8,20 +8,32 @@
 <body>
   <div class='container' id='root'>
  </div>
- <!-- <form action='/upload' method='post' enctype='multipart/form-data'>
+   <form id='myForm' onsubmit="upload(); return false;">
     <input type='file'  name='files'  multiple='multiple' />
     <input type="hidden" name="path" value="/">
     <button type='submit'>Upload</button>
-    </from> -->   
+  </from>     
   <div>
-    <button type='click' onclick="rename()">Remove</button>
+    <button type='click' onclick="rename()">Rename</button>
     <button type='click' onclick="download()">Download</button>
+    <button type='click' onclick="deleteReq()">Delete</button>
+    <button type='click' onclick="mkdir()">Mkdir</button>
+    <button type='click' onclick="move()">Move</button>
   </div>
   <!-- <script src="bundle.js"></script> -->
   <script>
+    function upload() {
+      const formData = new FormData(document.getElementById('myForm'));
+      const init = {
+        method: 'POST',
+        body: formData
+      };
+      fetch('/upload', init).then(res => console.log(res));
+    }
+
     function rename() {
       const payload = {
-        key: 16,
+        key: 3,
         name: 'pic.jpg',
         isdir: false
       }
@@ -37,8 +49,51 @@
       fetch('/rename', init).then(res => console.log(res));
     }
 
+      function move() {
+      const payload = {
+        key: 22,
+        prePath: '/24/',
+        newPath: '/',
+        isdir: true
+      }
+      const headers = {
+        'Accept': 'application/json, text/plain, */*',
+        'Content-Type': 'application/json'
+      }
+      const init = {
+        headers,
+        method: 'PUT',
+        body: JSON.stringify(payload)
+      };
+      fetch('/move', init).then(res => console.log(res));
+    }
+
     function download() {
-      fetch('/download?key=16').then(res => console.log(res));
+      fetch('/download?key=1').then(res => console.log(res));
+    }
+
+    function deleteReq() {
+      const init = {
+        method: 'DELETE'
+      }
+      fetch('/delete?key=6', init).then(res => console.log(res));
+    }
+
+    function mkdir() {
+      const payload = {
+        path: '/21/22/',
+        name: 'folder2'
+      }
+      const headers = {
+        'Accept': 'application/json, text/plain, */*',
+        'Content-Type': 'application/json'
+      }      
+      const init = {
+        headers,
+        method: 'POST',
+        body: JSON.stringify(payload)
+      }
+      fetch('/mkdir', init).then(res => console.log(res));
     }
   </script>
 </body>

@@ -31,18 +31,44 @@ module.exports = {
 
   download: function *() {
     const body = this.query;
-    const {d_dir, name} = yield handleDownload(this, body);
+    const result = yield handleDownload(this, body);
     //发送
-    this.set('Content-disposition', 'attachment; filename=' + name);
-    this.set('Content-type', mime.lookup(d_dir));
-    this.body = fs.createReadStream(d_dir);
-
+    for (let file of result) { //单文件有效
+      const { d_dir, name } = file;
+      this.set('Content-disposition', 'attachment; filename=' + name);
+      this.set('Content-type', mime.lookup(d_dir));
+      this.body = fs.createReadStream(d_dir);
+    }
   },
 
   rename: function *() {
     const body = yield parse(this);
+    body.lasttime = new Date();
     yield handleRename(this, body);
     
+  },
+
+  move: function *() {
+    const body = yield parse(this);
+    yield handleMove(this, body);
+    if (body.isdir) {
+      body.prePath += body.key + '/';
+      body.newPath += body.key + '/';
+      body.u_id = 0;
+      yield handleMoveDir(this, body); 
+    }
+  },
+
+  delete: function *() {
+    const body = this.query;
+    yield handleDelete(this, body);
+  },
+
+  mkdir: function *() {
+    const body = yield parse(this);
+    body.u_id = 0;
+    body.time = new Date();
+    yield handleMkdir(this, body);
   }
 
  }
@@ -69,7 +95,11 @@ const insertDoc = (ctx, body) => new Promise((resolve, reject) => {
   ctx.dbquery("insert into documents (d_hash, d_dir, d_size) values ($1, $2, $3);",
     values,
     (err, result) => {
-      if (err) reject(err);
+      if (err) {
+        if (err.constraint === "documents_pkey")
+          resolve('duplicate');
+        reject(err);
+      };
       resolve(result);
     });
 })
@@ -85,10 +115,32 @@ const insertU_D = (ctx, body) => new Promise((resolve, reject) => {
     });
 })
 
-const handleRename = (ctx, body) => new Promise((resolve, reject) => {
-  const { key, name } = body;
-  const values = [name, key];
-  ctx.dbquery(`update u_d set name = $1 where key = $2;`,
+const handleRename = (ctx, body) => new Promise((resolve, reject) => { //rename 
+  const { name, lasttime, key } = body;
+  const values = [name, lasttime, key];
+  ctx.dbquery(`update u_d set name = $1, lasttime = $2 where key = $3;`,
+    values,
+    (err, result) => {
+      if (err) reject(err);
+      resolve(result);
+    });
+})
+
+const handleMove = (ctx, body) => new Promise((resolve, reject) => { //move 
+  const { prePath, newPath, key } = body;
+  const values = [prePath, newPath, key];
+  ctx.dbquery(`update u_d set path = replace(path, $1, $2) where key = $3;`,
+    values,
+    (err, result) => {
+      if (err) reject(err);
+      resolve(result);
+    });
+})
+
+const handleMoveDir = (ctx, body) => new Promise((resolve, reject) => { //move 
+  const { prePath, newPath, u_id } = body;
+  const values = [prePath, newPath, u_id];
+  ctx.dbquery(`update u_d set path = replace(path, $1, $2) where u_id = $3;`,
     values,
     (err, result) => {
       if (err) reject(err);
@@ -97,13 +149,34 @@ const handleRename = (ctx, body) => new Promise((resolve, reject) => {
 })
 
 
-const handleDownload = (ctx, body) => new Promise((resolve, reject) => { //download promise
+
+const handleDownload = (ctx, body) => new Promise((resolve, reject) => { //download 
   const { key } = body;
-  const values = [key];
-  ctx.dbquery(`select d_dir, name from documents inner join u_d on documents.d_hash = u_d.d_hash where u_d.key = $1`,
+  ctx.dbquery(`select d_dir, name from documents inner join u_d on documents.d_hash = u_d.d_hash where u_d.key in (${key.toString()})`,
+    undefined,
+    (err, result) => {
+      if (err) reject(err);
+      resolve(result.rows);
+    });
+});
+
+const handleDelete = (ctx, body) => new Promise((resolve, reject) => { //download 
+  const { key } = body;
+  ctx.dbquery(`delete from u_d where key in (${key.toString()})`,
+    undefined,
+    (err, result) => {
+      if (err) reject(err);
+      resolve(result.rows);
+    });
+});
+
+const handleMkdir = (ctx, body) =>new Promise((resolve, reject) => { //download 
+  const { u_id, path, name, time } = body;
+  const values = [u_id, path, name, time, time, true];
+  ctx.dbquery(`insert into u_d (u_id, path, name, createtime, lasttime, isdir) values ($1, $2, $3, $4, $5, $6);`,
     values,
     (err, result) => {
       if (err) reject(err);
-      resolve(result.rows[0]);
+      resolve(result);
     });
-})
+});
