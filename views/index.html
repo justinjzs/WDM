@@ -8,12 +8,11 @@
 <body>
   <div class='container' id='root'>
  </div>
-   <form id='myForm' onsubmit="upload(); return false;">
-    <input type='file'  name='files'  multiple='multiple' />
-    <input type="hidden" name="path" value="/">
-    <button type='submit'>Upload</button>
-  </from>     
+    <input id='file' type='file'  name='files'  multiple='multiple' />
+    <input id='dir' type="file" name='dir' webkitdirectory />
   <div>
+    <button type='click' onclick="upload()" >UploadFile</button>
+    <button type='click' onclick="uploadDir()" >UploadDir</button>
     <button type='click' onclick="rename()">Rename</button>
     <button type='click' onclick="download()">Download</button>
     <button type='click' onclick="deleteReq()">Delete</button>
@@ -23,12 +22,32 @@
   <!-- <script src="bundle.js"></script> -->
   <script>
     function upload() {
-      const formData = new FormData(document.getElementById('myForm'));
+      const files = document.getElementById('file').files;
+      const formData = new FormData();
+      for (let file of files) {
+        formData.append('files', file, file.name);
+      }
+      formData.append('path', '/');
       const init = {
         method: 'POST',
         body: formData
       };
       fetch('/upload', init).then(res => console.log(res));
+    }
+
+    function uploadDir() {
+      const files = document.getElementById('dir').files;
+      const formData = new FormData();
+      for (let file of files) {
+        formData.append('files', file, file.name);
+        formData.append('webkitRelativePath[]', file.webkitRelativePath);
+      }
+      formData.append('path', '/');
+      const init = {
+        method: 'POST',
+        body: formData
+      };
+      fetch('/uploaddir', init).then(res => console.log(res));
     }
 
     function rename() {
@@ -68,9 +87,38 @@
       fetch('/move', init).then(res => console.log(res));
     }
 
+      const saveBlob = (function () {
+        const a = document.createElement("a");
+        document.body.appendChild(a);
+        a.style = "display: none";
+        return function (blob, fileName) {
+          const url = window.URL.createObjectURL(blob);
+          a.href = url;
+          a.download = fileName;
+          a.click();
+          window.URL.revokeObjectURL(url);
+        };
+      } ());
+    
     function download() {
-      fetch('/download?key=1').then(res => console.log(res));
+      //fetch('/download?key=45').then(res => res.arrayBuffer()).then(res => console.log(res));
+      const keys = [45];
+      for (let key of keys) {
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', `/download?key=${key}`, true);
+        
+        xhr.responseType = 'blob';
+        xhr.onload = function (e) {
+          if (this.status == 200) {
+            console.log(xhr.response);
+            var blob = this.response;
+            saveBlob(blob, 'cat.jpg');
+          }
+        }
+        xhr.send();
+      }
     }
+
 
     function deleteReq() {
       const init = {

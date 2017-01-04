@@ -29,16 +29,52 @@ module.exports = {
     }
   },
 
+  uploadDir: function *() {
+    const { fields, files } = yield handleUpload(this);
+    if (!Array.isArray(files.files)) //上传单个文件时，不是数组。<input name='files' />
+      files.files = [files.files];
+   const root = {
+     path: fields.path,
+     name: '',
+     children: []
+ }
+    for (let file of files.files) {
+      let path = file.webkitRelativePath.split('/');
+      path.pop();
+      let preDir = root;
+      for (let name of path) {
+        let flag = true;
+        let curDir;
+        for (let dup of preDir.children) {
+          if (dup.name === name) {
+            flag = false;
+            curDir = dup;
+            break;
+          }
+        }
+        if (flag) {
+          curDir = {
+            name,
+            key: 'key',
+            path: preDir.path + (preDir.key ? preDir.key + '/' : ''),
+            children: []
+          }
+          preDir.children = [...preDir.children, curDir];
+        }
+        preDir = curDir;
+      }
+    }
+    console.log(root.children[0]);    
+  },
+
   download: function *() {
     const body = this.query;
-    const result = yield handleDownload(this, body);
+    const { d_dir, name } = yield handleDownload(this, body);
     //发送
-    for (let file of result) { //单文件有效
-      const { d_dir, name } = file;
-      this.set('Content-disposition', 'attachment; filename=' + name);
-      this.set('Content-type', mime.lookup(d_dir));
-      this.body = fs.createReadStream(d_dir);
-    }
+    this.set('Content-disposition', 'attachment; filename=' + name);
+    this.set('Content-type', mime.lookup(d_dir));
+    this.body = fs.createReadStream(d_dir);
+
   },
 
   rename: function *() {
@@ -152,11 +188,12 @@ const handleMoveDir = (ctx, body) => new Promise((resolve, reject) => { //move
 
 const handleDownload = (ctx, body) => new Promise((resolve, reject) => { //download 
   const { key } = body;
-  ctx.dbquery(`select d_dir, name from documents inner join u_d on documents.d_hash = u_d.d_hash where u_d.key in (${key.toString()})`,
-    undefined,
+  const values = [key];
+  ctx.dbquery(`select d_dir, name from documents inner join u_d on documents.d_hash = u_d.d_hash where u_d.key = $1;`,
+    values,
     (err, result) => {
       if (err) reject(err);
-      resolve(result.rows);
+      resolve(result.rows[0]);
     });
 });
 
