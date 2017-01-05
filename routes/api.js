@@ -3,6 +3,7 @@ const api  = require('../controller/api');
 
 route//.get('/home', api.home) //文件信息
      .get('/download', api.download) //下载
+     .get('/downloadzip', api.downloadzip)  //下载多文件
      .post('/upload', api.upload)  //上传文件
      .post('/uploaddir', api.uploadDir)  //上传文件夹
      .post('/mkdir', api.mkdir)//新建文件夹

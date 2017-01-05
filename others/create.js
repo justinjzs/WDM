@@ -14,13 +14,13 @@ const conString = "tcp://jin:jinzis@localhost:5432/wdm";
 //   );`
 //  )
 
-const query = client.query(
-  `CREATE TABLE documents (
-    D_hash varchar(80) primary key not null,
-    D_dir  varchar(100) not null,
-    D_size bigint not null
-  );`
-)
+// const query = client.query(
+//   `CREATE TABLE documents (
+//     D_hash varchar(80) primary key not null,
+//     D_dir  varchar(100) not null,
+//     D_size bigint not null
+//   );`
+// )
 
 
 // const query = client.query(
@@ -36,6 +36,7 @@ const query = client.query(
 //   );`
 // )
 
+client.query(`insert into documents (d_hash, d_dir, d_size) values ('123', '321', 123) returning d_hash;`,
+  (err, result) => {if (err) throw err; console.log(result); client.end(); });
 
-
-query.on('end', () => client.end() );
+//query.on('end', () => client.end() );

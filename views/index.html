@@ -39,8 +39,7 @@
       const files = document.getElementById('dir').files;
       const formData = new FormData();
       for (let file of files) {
-        formData.append('files', file, file.name);
-        formData.append('webkitRelativePath[]', file.webkitRelativePath);
+        formData.append('files', file, file.webkitRelativePath);
       }
       formData.append('path', '/');
       const init = {
@@ -102,8 +101,9 @@
     
     function download() {
       //fetch('/download?key=45').then(res => res.arrayBuffer()).then(res => console.log(res));
-      const keys = [45];
-      for (let key of keys) {
+      const keys = [76,77,78,79,80,81,82,83,84];
+      if (keys.length == 1 && !keys[0].isdir) { //单文件
+        let key = keys[0];
         const xhr = new XMLHttpRequest();
         xhr.open('GET', `/download?key=${key}`, true);
         
@@ -113,6 +113,24 @@
             console.log(xhr.response);
             var blob = this.response;
             saveBlob(blob, 'cat.jpg');
+          }
+        }
+        xhr.send();
+
+      } else {  //多文件/目录
+        let query = keys.map( key  => 'key=' + key );
+        query = query.join('&')
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', `/downloadzip?${query}`, true);
+        
+        xhr.responseType = 'blob';
+        xhr.onload = function (e) {
+          if (this.status == 200) {
+            console.log(xhr.response);
+            var blob = this.response;
+            const time = new Date().getTime().toString();
+            saveBlob(blob, time);
           }
         }
         xhr.send();

@@ -4,6 +4,9 @@ const path = require('path');
 const fs = require('fs');
 const mime = require('mime-types');
 const Pool = require('./pool');
+require('events').EventEmitter.prototype._maxListeners = 100; //设置最大为100，或0，取消
+
+
 
 module.exports = {
   upload: function *() {
@@ -11,6 +14,7 @@ module.exports = {
     if (!Array.isArray(files.files)) //上传单个文件时，不是数组。<input name='files' />
       files.files = [files.files];
 
+    const time = new Date();    //统一上传时间。
     for (let file of files.files) { //处理每个文件
       const body = {  
         d_hash: file.hash,
@@ -18,8 +22,8 @@ module.exports = {
         d_size: file.size,
         u_id: 0,
         path: fields.path,
-        name: file.name, //重名处理
-        time: new Date()
+        name: file.name,
+        time
       }
 
       fs.rename(file.path, body.d_dir, err => { if (err) throw err; }); //用hash值来重命名
@@ -30,41 +34,64 @@ module.exports = {
   },
 
   uploadDir: function *() {
-    const { fields, files } = yield handleUpload(this);
+    const { fields, files } = yield handleUpload(this);  //解析请求
     if (!Array.isArray(files.files)) //上传单个文件时，不是数组。<input name='files' />
       files.files = [files.files];
-   const root = {
-     path: fields.path,
-     name: '',
-     children: []
- }
+
+    const root = {
+      path: fields.path,
+      name: '',
+      children: []
+    }; 
+    const u_id = 0;
+    const time = new Date();    //统一上传时间
+
+    //产生dirtree
     for (let file of files.files) {
-      let path = file.webkitRelativePath.split('/');
-      path.pop();
+      let dirPath = file.name.split('/');
+      //记录文件信息
+      const body = {  //insertDoc(): 必需d_hash, d_dir, d_size, 
+        d_hash: file.hash,
+        d_dir: path.join(__dirname, `../public/assets/${file.hash}`),
+        d_size: file.size,
+        u_id,         //insertU_D(): 必需u_id, d_hash, name, time, path (缺path)
+        name: dirPath.pop(),
+        time
+      }
+
+      fs.rename(file.path, body.d_dir, err => { if (err) throw err; }); //用hash值来重命名
+
       let preDir = root;
-      for (let name of path) {
-        let flag = true;
-        let curDir;
-        for (let dup of preDir.children) {
+      for (let name of dirPath) {
+        let flag = true;   //目录记录标志
+        let curDir;       //当前目录
+        for (let dup of preDir.children) { //遍历，判断是否已记录该目录
           if (dup.name === name) {
             flag = false;
-            curDir = dup;
+            curDir = dup;  //获取当前目录
             break;
           }
         }
-        if (flag) {
-          curDir = {
+        if (flag) { //未记录目录
+          //记录目录信息
+          curDir = { //handleMkdir(): u_id, name, time, path
+            u_id,
             name,
+            time,
+            path: ( preDir => () => (preDir.path + (preDir.key ? preDir.key + '/' : '')))(preDir), //闭包。记下当前的preDir对象。
             key: 'key',
-            path: preDir.path + (preDir.key ? preDir.key + '/' : ''),
             children: []
-          }
+          };
           preDir.children = [...preDir.children, curDir];
         }
         preDir = curDir;
       }
+
+      body.path = ( preDir => () => (preDir.path + preDir.key + '/'))(preDir);  //补全文件path
+      preDir.children = [...preDir.children, body]
     }
-    console.log(root.children[0]);    
+
+    yield handleUploadDir(this, root.children);
   },
 
   download: function *() {
@@ -75,6 +102,12 @@ module.exports = {
     this.set('Content-type', mime.lookup(d_dir));
     this.body = fs.createReadStream(d_dir);
 
+  },
+
+  downloadzip: function *() {
+    const body = this.query;
+    const result = yield searchFiles(this, body);
+    console.log(result);
   },
 
   rename: function *() {
@@ -104,7 +137,8 @@ module.exports = {
     const body = yield parse(this);
     body.u_id = 0;
     body.time = new Date();
-    yield handleMkdir(this, body);
+    const result = yield handleMkdir(this, body);
+    console.log(result);
   }
 
  }
@@ -210,10 +244,44 @@ const handleDelete = (ctx, body) => new Promise((resolve, reject) => { //downloa
 const handleMkdir = (ctx, body) =>new Promise((resolve, reject) => { //download 
   const { u_id, path, name, time } = body;
   const values = [u_id, path, name, time, time, true];
-  ctx.dbquery(`insert into u_d (u_id, path, name, createtime, lasttime, isdir) values ($1, $2, $3, $4, $5, $6);`,
+  ctx.dbquery(`insert into u_d (u_id, path, name, createtime, lasttime, isdir) values ($1, $2, $3, $4, $5, $6) returning key;`,
     values,
     (err, result) => {
       if (err) reject(err);
-      resolve(result);
+      resolve(result.rows[0].key);
     });
 });
+
+const searchFiles = (ctx, body) =>new Promise((resolve, reject) => { //downloadzip 
+  const { key } = body;
+  values = '(' + key.join(',') + ')';
+  ctx.dbquery(`select key, d_hash, isdir, path, name from u_d where key in ${values} ;`,
+    undefined,
+    (err, result) => {
+      if (err) reject(err);
+      resolve(result.rows);
+    });
+});
+
+
+function *handleUploadDir(ctx, level) {
+  while (level.length) { //为空即全部完成。
+    let nextLevel = []; //下一层
+
+    for (let body of level) {
+      body.path = body.path(); //获取path
+      //更新数据库
+      if (body.children) {   //是目录
+        body.key = yield handleMkdir(ctx, body);
+        nextLevel = [...nextLevel, ...body.children]; //下一层的文件/目录
+      } else {  //不是目录
+        yield insertDoc(ctx, body);
+        body.key = yield insertU_D(ctx, body);
+      }    
+    }
+
+    level = nextLevel; //更新level
+  }
+
+}
+
