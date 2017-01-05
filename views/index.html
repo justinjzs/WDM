@@ -101,7 +101,7 @@
     
     function download() {
       //fetch('/download?key=45').then(res => res.arrayBuffer()).then(res => console.log(res));
-      const keys = [76,77,78,79,80,81,82,83,84];
+      const keys = [57,58,59,60,61];
       if (keys.length == 1 && !keys[0].isdir) { //单文件
         let key = keys[0];
         const xhr = new XMLHttpRequest();
@@ -127,10 +127,11 @@
         xhr.responseType = 'blob';
         xhr.onload = function (e) {
           if (this.status == 200) {
-            console.log(xhr.response);
+            name = xhr.getResponseHeader('Content-disposition').split('=').pop();
+
             var blob = this.response;
             const time = new Date().getTime().toString();
-            saveBlob(blob, time);
+            saveBlob(blob, name);
           }
         }
         xhr.send();

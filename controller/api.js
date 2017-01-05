@@ -2,7 +2,9 @@ const parse = require('co-body');
 const formidable = require('formidable');
 const path = require('path');
 const fs = require('fs');
+const cofs = require('co-fs')
 const mime = require('mime-types');
+const archiver = require('archiver');
 const Pool = require('./pool');
 require('events').EventEmitter.prototype._maxListeners = 100; //设置最大为100，或0，取消
 
@@ -105,9 +107,44 @@ module.exports = {
   },
 
   downloadzip: function *() {
+
+
     const body = this.query;
     const result = yield searchFiles(this, body);
-    console.log(result);
+
+    result.sort((a, b) => a.path.match(/\//g).length > b.path.match(/\//g).length ); //排序
+    let profix = result[0].path; //前缀
+
+    const dirMap = {};  //key--name 映射
+    for (let file of result) 
+      dirMap[file.key] = file.name;
+
+       //临时目录
+      const tmp = fs.mkdtempSync(path.join(__dirname, '../public/download/')); 
+      
+
+    for (let file of result) { 
+      // 重写路径
+      file.path = file.path.replace(profix, '/');
+      let temp = file.path.split('/');
+      temp = temp.map(key => key && dirMap[+key] );
+      file.path = temp.join('/') + file.name;
+
+      //移动
+      const dist = tmp + file.path ; //目标路径
+      if (file.isdir)
+        fs.mkdirSync(dist);
+      else
+        fs.createReadStream(file.d_dir).pipe(fs.createWriteStream(dist));
+    }
+
+    //压缩
+    const {zipPath, zipName} = yield zip(tmp);
+    this.set('Content-disposition', 'attachment; filename=' + zipName);
+    this.set('Content-type', mime.lookup(zipPath));
+    this.body = fs.createReadStream(zipPath);
+    this.body.on('close', () => fs.unlinkSync(zipPath));
+
   },
 
   rename: function *() {
@@ -142,6 +179,44 @@ module.exports = {
   }
 
  }
+
+
+
+
+//压缩
+const zip = tmp => new Promise((resolve, reject) => {
+  const zipName = new Date().getTime().toString() + '.zip';
+  const zipPath = tmp + zipName;
+  const archive = archiver('zip', {
+    store: true
+  });
+  const output = fs.createWriteStream(zipPath);
+  archive.on('error', err => reject(err));
+  archive.pipe(output);
+  let dest =  tmp.split(path.sep).pop();
+
+  archive.directory(tmp, '/');
+  archive.finalize();
+  output.on('close', () => {delDir(tmp); resolve({zipPath, zipName}); });
+});
+
+const delDir = dir => { //删除目录
+  if (fs.existsSync(dir)) {
+    let files = fs.readdirSync(dir);
+    //移除目录内容
+    for (let file of files) {
+      curDir = dir + '/' + file;
+      if (fs.statSync(curDir).isDirectory())
+        delDir(curDir);
+      else
+        fs.unlinkSync(curDir);
+    }
+    //移除目录
+    fs.rmdirSync(dir);
+  }
+};
+
+
 
 //上传处理函数和数据库处理函数
 const handleUpload = ctx => new Promise((resolve, reject) => { //处理文件上传
@@ -255,7 +330,7 @@ const handleMkdir = (ctx, body) =>new Promise((resolve, reject) => { //download
 const searchFiles = (ctx, body) =>new Promise((resolve, reject) => { //downloadzip 
   const { key } = body;
   values = '(' + key.join(',') + ')';
-  ctx.dbquery(`select key, d_hash, isdir, path, name from u_d where key in ${values} ;`,
+  ctx.dbquery(`select key, u_d.d_hash, d_dir, isdir, path, name from u_d left join documents on documents.d_hash = u_d.d_hash where u_d.key in ${values}  ;`,
     undefined,
     (err, result) => {
       if (err) reject(err);
