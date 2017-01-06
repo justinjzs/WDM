@@ -4,10 +4,10 @@ const path = require('path');
 const fs = require('fs');
 const cofs = require('co-fs')
 const mime = require('mime-types');
+const randomstring = require('randomstring');
 const archiver = require('archiver');
 const Pool = require('./pool');
-require('events').EventEmitter.prototype._maxListeners = 100; //设置最大为100，或0，取消
-
+require('events').EventEmitter.prototype._maxListeners = 100; //设置最大为100，或置0取消
 
 
 module.exports = {
@@ -108,9 +108,10 @@ module.exports = {
 
   downloadzip: function *() {
 
-
     const body = this.query;
     const result = yield searchFiles(this, body);
+
+
 
     result.sort((a, b) => a.path.match(/\//g).length > b.path.match(/\//g).length ); //排序
     let profix = result[0].path; //前缀
@@ -119,9 +120,10 @@ module.exports = {
     for (let file of result) 
       dirMap[file.key] = file.name;
 
-       //临时目录
-      const tmp = fs.mkdtempSync(path.join(__dirname, '../public/download/')); 
+
       
+        //临时目录
+    const tmp = fs.mkdtempSync(path.join(__dirname, '../public/download/'));
 
     for (let file of result) { 
       // 重写路径
@@ -138,8 +140,10 @@ module.exports = {
         fs.createReadStream(file.d_dir).pipe(fs.createWriteStream(dist));
     }
 
+
     //压缩
     const {zipPath, zipName} = yield zip(tmp);
+
     this.set('Content-disposition', 'attachment; filename=' + zipName);
     this.set('Content-type', mime.lookup(zipPath));
     this.body = fs.createReadStream(zipPath);
@@ -166,8 +170,8 @@ module.exports = {
   },
 
   delete: function *() {
-    const body = this.query;
-    yield handleDelete(this, body);
+    const query = this.query;
+    yield handleDelete(this, query);
   },
 
   mkdir: function *() {
@@ -176,15 +180,78 @@ module.exports = {
     body.time = new Date();
     const result = yield handleMkdir(this, body);
     console.log(result);
+  },
+
+  share: function *() {
+    const body = yield parse(this); //拿到key
+
+    let rows = yield searchFiles(this, body); //拿到记录
+    rmProfix(rows); //移除前缀
+
+    //构造所需信息
+    const result = {
+      u_id: 0,
+      addr: randomstring.generate(10),
+      secret: (!!+body.isSecret) ? randomstring.generate(6) : null,
+      rows
+    }
+
+    const { addr, secret } = yield insertShare(this, result); //添加share表
+
+    const res = {
+      addr,
+      secret
+    }
+    //响应
+    this.set('Content-type', 'application/json');
+    this.body = JSON.stringify(res);
+  },
+
+  unshare: function *() {
+    const body = yield parse(this);
+    body.u_id = 0;
+    const res = yield handleUnshare(this, body);
+
+    this.set('Content-type', 'application/json');
+    this.body = JSON.stringify(res);
+  },
+
+  downShare: function *() {
+    //获取query
+    const query = this.query;
+    //查询文件信息
+    const files = yield handleDownshare(this, query);
+    //创建临时目录
+    const tmp = fs.mkdtempSync(path.join(__dirname, '../public/download/'));
+    //改写文件目录
+    rewritePath(files);
+    //复制文件到临时目录
+    copyFiles(files, tmp);
+    //压缩
+    const zipInfo = yield zip(tmp);
+    //发送
+    sendZip(this, zipInfo);
+
   }
 
  }
 
 
 
+const sendZip = ( ctx, zipInfo ) => {
+  const {zipPath, zipName} = zipInfo;
+  ctx.set('Content-disposition', 'attachment; filename=' + zipName);
+  ctx.set('Content-type', mime.lookup(zipPath));
+  ctx.body = fs.createReadStream(zipPath);
+  ctx.body.on('close', () => fs.unlinkSync(zipPath));
 
-//压缩
+}
+
+
+//压缩制定目录下的文件夹
 const zip = tmp => new Promise((resolve, reject) => {
+  if (!fs.existsSync(tmp))
+    reject('tmp is not exist!');
   const zipName = new Date().getTime().toString() + '.zip';
   const zipPath = tmp + zipName;
   const archive = archiver('zip', {
@@ -215,8 +282,6 @@ const delDir = dir => { //删除目录
     fs.rmdirSync(dir);
   }
 };
-
-
 
 //上传处理函数和数据库处理函数
 const handleUpload = ctx => new Promise((resolve, reject) => { //处理文件上传
@@ -329,7 +394,7 @@ const handleMkdir = (ctx, body) =>new Promise((resolve, reject) => { //download
 
 const searchFiles = (ctx, body) =>new Promise((resolve, reject) => { //downloadzip 
   const { key } = body;
-  values = '(' + key.join(',') + ')';
+  const values = '(' + key.join(',') + ')';
   ctx.dbquery(`select key, u_d.d_hash, d_dir, isdir, path, name from u_d left join documents on documents.d_hash = u_d.d_hash where u_d.key in ${values}  ;`,
     undefined,
     (err, result) => {
@@ -360,3 +425,74 @@ function *handleUploadDir(ctx, level) {
 
 }
 
+const insertShare = (ctx, body) =>new Promise((resolve, reject) => { //insertshare 
+  let { u_id, addr, secret, rows } = body;
+  secret = secret && `'${secret}'`;
+  let values = rows.map(row => (
+    `('${addr}', ${secret}, ${u_id}, ${row.key}, '${row.d_hash}', '${row.d_dir}', ${row.isdir}, '${row.path}', '${row.name}')`
+  ));
+  values = values.join(',');
+  ctx.dbquery(`insert into share (addr, secret, u_id, key, d_hash, d_dir, isdir, path, name) values ${values} returning addr, secret;`,
+    undefined,
+    (err, result) => {
+      if (err) reject(err);
+      resolve(result.rows[0]);
+    });
+});
+
+const handleUnshare = (ctx, body) => new Promise((resolve, reject) => { //download 
+  const { addr, u_id } = body;
+  const values = [addr, u_id];
+  ctx.dbquery(`delete from share where addr = $1 and u_id = $2 ;`,
+    values,
+    (err, result) => {
+      if (err) reject(err);
+      resolve({done: true});
+    });
+});
+
+//按文件层次排序，并移除公共前缀
+//files:Array of { path }
+const rmProfix = files => {  
+  files.sort((a, b) => a.path.match(/\//g).length > b.path.match(/\//g).length ); //排序
+  const profix = files[0].path; //前缀
+  for (let file of files) 
+    file.path = file.path.replace(profix, '/');
+};
+
+//改写路径 /key/ --> /name/
+//files: Array of { key, name, path }
+const rewritePath = files => {
+  const dirMap = {};
+  for (let file of files) 
+    dirMap[file.key] = file.name;
+  for (let file of files) {
+    let temp = file.path.split('/');
+    temp = temp.map(key => key && dirMap[+key] );
+    file.path = temp.join('/') + file.name;
+  } 
+}
+
+//复制文件到指定目录下
+//files:Array of { path, isdir, d_dir }
+const copyFiles = (files, dir) => { 
+  for (let file of files) { 
+  //移动
+  const dist = dir + file.path ; //目标路径
+  if (file.isdir)
+    fs.mkdirSync(dist);
+  else
+    fs.createReadStream(file.d_dir).pipe(fs.createWriteStream(dist));
+  }  
+}
+
+const handleDownshare = (ctx, body) =>new Promise((resolve, reject) => { //downloadzip 
+  const { addr } = body;
+  const values = [addr];
+  ctx.dbquery(`select key, name, path, isdir, d_dir from share where addr = $1 ;`,
+    values,
+    (err, result) => {
+      if (err) reject(err);
+      resolve(result.rows);
+    });
+});

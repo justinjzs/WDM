@@ -24,7 +24,8 @@
     "koa-session": "^3.4.0",
     "koa-static": "^2.0.0",
     "mime-types": "^2.1.13",
-    "pg": "^6.1.2"
+    "pg": "^6.1.2",
+    "randomstring": "^1.1.5"
   },
   "devDependencies": {
     "babel-core": "^6.21.0",

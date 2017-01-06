@@ -1,5 +1,5 @@
 const pg = require('pg');
-const Pool = require('./pool'); //client pool
+
 
 const config = {
   user: 'jin', //env var: PGUSER
@@ -11,9 +11,23 @@ const config = {
   idleTimeoutMillis: 30000, // how long a client is allowed to remain idle before being closed
 };
 
+const dbquery = pool => function(text, values, cb) {
+  pool.connect(function(err, client, done) {
+  if(err) {
+    return console.error('error fetching client from pool', err);
+  }
+  client.query(text, values, function(err, result) {
+    done();
+    cb(err, result);
+  });
+});
+  pool.on('error', function (err, client) {
+  console.error('idle client error', err.message, err.stack)
+  })
+}
 
 module.exports = function *(next) {
-  const pool = new pg.Pool(config);
-  this.dbquery = Pool(pool);
+  const pool = new pg.Pool(config); 
+  this.dbquery = dbquery(pool);
   yield next;
 }

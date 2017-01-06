@@ -2,6 +2,7 @@ const koa = require('koa');
 const path = require('path');
 const logger = require('koa-logger');
 const serve = require('koa-static');
+const methodOverride = require('koa-methodoverride');
 const favicon = require('koa-favicon');
 const pages = require('./routes/pages');
 const api = require('./routes/api');
@@ -17,6 +18,7 @@ app.use(serve(path.join(__dirname, './public'))); //静态文件
 
 app.use(db); //连接数据库
 
+app.use(methodOverride('_method')); //重写method
 app.use(api.routes());    //api路由
 app.use(pages.routes()); //页面路由
 

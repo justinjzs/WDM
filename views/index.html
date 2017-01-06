@@ -18,9 +18,12 @@
     <button type='click' onclick="deleteReq()">Delete</button>
     <button type='click' onclick="mkdir()">Mkdir</button>
     <button type='click' onclick="move()">Move</button>
+    <button type='click' onclick="share()">Share</button>
+    <button type='click' onclick="downShare()">downShare</button>
   </div>
   <!-- <script src="bundle.js"></script> -->
   <script>
+  let shareInfo;
     function upload() {
       const files = document.getElementById('file').files;
       const formData = new FormData();
@@ -162,6 +165,54 @@
       }
       fetch('/mkdir', init).then(res => console.log(res));
     }
+
+    function share() {
+      const xhr = new XMLHttpRequest();
+      const unshare = new XMLHttpRequest();
+
+      xhr.open('POST', '/share', true);
+      
+
+      xhr.onload = function (e) {
+      if (this.status == 200) {
+        const res = JSON.parse(xhr.response);
+        shareInfo = res;
+        //unshare.open('POST', `/unshare?_method=DELETE`, true);
+        //unshare.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        //unshare.send(`addr=${res.addr}`);
+      }
+     }
+
+     unshare.onload = function(e) {
+       if (this.status == 200) {
+         console.log(JSON.parse(unshare.response));
+       }
+     }
+
+      const keys = [66,67,68,69,70];
+      let query = keys.map(key => 'key=' + key);
+      query = query.join('&') + '&isSecret=1'
+      xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+      xhr.send(query);
+   }
+
+    function downShare() {
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', `/downshare?addr=${shareInfo.addr}`, true);
+
+      xhr.responseType = 'blob';
+      xhr.onload = function (e) {
+        if (this.status == 200) {
+          name = xhr.getResponseHeader('Content-disposition').split('=').pop();
+
+          var blob = this.response;
+          const time = new Date().getTime().toString();
+          saveBlob(blob, name);
+        }
+      }
+      xhr.send();
+    }                                                
   </script>
 </body>
 
