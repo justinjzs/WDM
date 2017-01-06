@@ -1,7 +1,7 @@
 const route = require('koa-router')();
 const api  = require('../controller/api');
 
-route//.get('/docinfo', api.docinfo) //home页信息
+route//.get('/homeinfo', api.docinfo) //home页信息
      //.get('/shareinfo', api.shareinfo) //分享页信息
      .get('/download', api.download) //下载单文件
      .get('/downloadzip', api.downloadzip)  //下载多文件

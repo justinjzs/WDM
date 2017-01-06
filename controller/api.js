@@ -13,8 +13,7 @@ require('events').EventEmitter.prototype._maxListeners = 100; //设置最大为1
 module.exports = {
   upload: function *() {
     const { fields, files } = yield handleUpload(this);
-    if (!Array.isArray(files.files)) //上传单个文件时，不是数组。<input name='files' />
-      files.files = [files.files];
+
 
     const time = new Date();    //统一上传时间。
     for (let file of files.files) { //处理每个文件
@@ -37,8 +36,6 @@ module.exports = {
 
   uploadDir: function *() {
     const { fields, files } = yield handleUpload(this);  //解析请求
-    if (!Array.isArray(files.files)) //上传单个文件时，不是数组。<input name='files' />
-      files.files = [files.files];
 
     const root = {
       path: fields.path,
@@ -107,48 +104,21 @@ module.exports = {
   },
 
   downloadzip: function *() {
-
-    const body = this.query;
-    const result = yield searchFiles(this, body);
-
-
-
-    result.sort((a, b) => a.path.match(/\//g).length > b.path.match(/\//g).length ); //排序
-    let profix = result[0].path; //前缀
-
-    const dirMap = {};  //key--name 映射
-    for (let file of result) 
-      dirMap[file.key] = file.name;
-
-
-      
-        //临时目录
+    const query = this.query;
+    //文件信息
+    const files = yield searchFiles(this, query);
+    //移除前缀
+    rmProfix(files);
+    //改写路径
+    rewritePath(files);
+    //临时目录
     const tmp = fs.mkdtempSync(path.join(__dirname, '../public/download/'));
-
-    for (let file of result) { 
-      // 重写路径
-      file.path = file.path.replace(profix, '/');
-      let temp = file.path.split('/');
-      temp = temp.map(key => key && dirMap[+key] );
-      file.path = temp.join('/') + file.name;
-
-      //移动
-      const dist = tmp + file.path ; //目标路径
-      if (file.isdir)
-        fs.mkdirSync(dist);
-      else
-        fs.createReadStream(file.d_dir).pipe(fs.createWriteStream(dist));
-    }
-
-
-    //压缩
-    const {zipPath, zipName} = yield zip(tmp);
-
-    this.set('Content-disposition', 'attachment; filename=' + zipName);
-    this.set('Content-type', mime.lookup(zipPath));
-    this.body = fs.createReadStream(zipPath);
-    this.body.on('close', () => fs.unlinkSync(zipPath));
-
+    //复制文件
+    copyFiles(files, tmp);
+    //压缩文件
+    const zipInfo = yield zip(tmp);
+    //发送文件
+    sendZip(this, zipInfo);
   },
 
   rename: function *() {
@@ -183,28 +153,28 @@ module.exports = {
   },
 
   share: function *() {
-    const body = yield parse(this); //拿到key
-
-    let rows = yield searchFiles(this, body); //拿到记录
-    rmProfix(rows); //移除前缀
-
-    //构造所需信息
+    //拿到key
+    const body = yield parse(this); 
+    //拿到记录
+    let rows = yield searchFiles(this, body); 
+    //移除前缀
+    rmProfix(rows); 
+    //构insertShare所需的信息
     const result = {
       u_id: 0,
       addr: randomstring.generate(10),
       secret: (!!+body.isSecret) ? randomstring.generate(6) : null,
       rows
     }
-
-    const { addr, secret } = yield insertShare(this, result); //添加share表
-
+    //添加share表
+    const { addr, secret } = yield insertShare(this, result); 
+    //响应信息
     const res = {
       addr,
       secret
     }
     //响应
-    this.set('Content-type', 'application/json');
-    this.body = JSON.stringify(res);
+    sendJSON(this, res);
   },
 
   unshare: function *() {
@@ -229,7 +199,7 @@ module.exports = {
     copyFiles(files, tmp);
     //压缩
     const zipInfo = yield zip(tmp);
-    //发送
+    //发送zip
     sendZip(this, zipInfo);
 
   }
@@ -237,7 +207,7 @@ module.exports = {
  }
 
 
-
+//发送压缩包
 const sendZip = ( ctx, zipInfo ) => {
   const {zipPath, zipName} = zipInfo;
   ctx.set('Content-disposition', 'attachment; filename=' + zipName);
@@ -245,6 +215,11 @@ const sendZip = ( ctx, zipInfo ) => {
   ctx.body = fs.createReadStream(zipPath);
   ctx.body.on('close', () => fs.unlinkSync(zipPath));
 
+}
+//发送json格式的响应
+const sendJSON = (ctx, json) => {
+  ctx.set('Content-type', 'application/json');
+  ctx.body = JSON.stringify(json);
 }
 
 
@@ -295,6 +270,8 @@ const handleUpload = ctx => new Promise((resolve, reject) => { //处理文件上
 
     form.parse(ctx.req, (err, fields, files) => {
       if (err) reject(err);
+      if (!Array.isArray(files.files)) //上传单个文件时，不是数组。<input name='files' />
+        files.files = [files.files];
       resolve({fields, files});
     });
   });
