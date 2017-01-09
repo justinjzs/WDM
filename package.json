@@ -34,6 +34,7 @@
     "babel-preset-react": "^6.16.0",
     "babel-preset-stage-0": "^6.16.0",
     "bootstrap": "^4.0.0-alpha.2",
+    "chai": "^3.5.0",
     "co-fs": "^1.2.0",
     "css-loader": "^0.26.1",
     "koa-favicon": "^1.2.1",
@@ -46,6 +47,7 @@
     "redux-thunk": "^2.1.0",
     "sass-loader": "^4.1.1",
     "style-loader": "^0.13.1",
+    "supertest": "^2.0.1",
     "webpack": "^1.14.0"
   }
 }

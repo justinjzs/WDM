@@ -26,6 +26,7 @@ const dbquery = pool => function(text, values, cb) {
   })
 }
 
+
 module.exports = function *(next) {
   const pool = new pg.Pool(config); 
   this.dbquery = dbquery(pool);
