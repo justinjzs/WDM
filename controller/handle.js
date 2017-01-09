@@ -16,11 +16,10 @@ module.exports = function handle() {
 
   }
   //发送json格式的响应2
-  const sendJSON = (ctx, json) => {
+  const sendRes = (ctx, res) => {
     ctx.set('Content-type', 'application/json');
-    ctx.body = JSON.stringify(json);
+    ctx.body = JSON.stringify(res);
   }
-
 
   //压缩制定目录下的文件夹3
   const zip = tmp => new Promise((resolve, reject) => {
@@ -60,7 +59,7 @@ module.exports = function handle() {
   };
 
   //上传处理函数5
-  const handleUpload = ctx => new Promise((resolve, reject) => { //处理文件上传
+  const parseFiles = ctx => new Promise((resolve, reject) => { //处理文件上传
     const uploadDir = path.join(__dirname, `../public/assets`);
     let form = formidable.IncomingForm({
       uploadDir,
@@ -71,6 +70,8 @@ module.exports = function handle() {
 
     form.parse(ctx.req, (err, fields, files) => {
       if (err) reject(err);
+      if (!files.files) //上传文件为空
+        files.files = [];
       if (!Array.isArray(files.files)) //上传单个文件时，不是数组。<input name='files' />
         files.files = [files.files];
       resolve({ fields, files });
@@ -95,11 +96,11 @@ module.exports = function handle() {
   const insertU_D = (ctx, body) => new Promise((resolve, reject) => {
     const { u_id, d_hash, path, name, time } = body;
     const values = [u_id, d_hash, path, name, time, time, false];
-    ctx.dbquery(`insert into u_d (u_id, d_hash, path, name, createtime, lasttime, isdir) values ($1, $2, $3, $4, $5, $6, $7) returning key, path, name, lasttime, isdir;`,
+    ctx.dbquery(`insert into u_d (u_id, d_hash, path, name, createtime, lasttime, isdir) values ($1, $2, $3, $4, $5, $6, $7) returning key;`,
       values,
       (err, result) => {
         if (err) reject(err);
-        resolve(result.rows);
+        resolve(result.rows[0]);
       });
   })
   //重命名8
@@ -190,12 +191,22 @@ module.exports = function handle() {
         body.path = body.path(); //获取path
         //更新数据库
         if (body.children) {   //是目录
-          body.key = yield handleMkdir(ctx, body);
+          body.key = (yield handleMkdir(ctx, body)).key;
+          body.isdir = true;
           nextLevel = [...nextLevel, ...body.children]; //下一层的文件/目录
         } else {  //不是目录
           yield insertDoc(ctx, body);
-          body.key = yield insertU_D(ctx, body);
+          body.isdir = false;
+          body.key = (yield insertU_D(ctx, body)).key;
         }
+        //去除多余的属性
+        delete body.d_hash;
+        delete body.d_dir;
+        delete body.u_id;
+        body.createtime = body.time;
+        body.lasttime = body.time;
+        delete body.time;
+
       }
 
       level = nextLevel; //更新level
@@ -231,11 +242,11 @@ module.exports = function handle() {
 
   //按文件层次排序，并移除公共前缀18
   //files:Array of { path }
-  const rmProfix = files => {
+  const rmPrefix = files => {
     files.sort((a, b) => a.path.match(/\//g).length > b.path.match(/\//g).length); //排序
-    const profix = files[0].path; //前缀
+    const prefix = files[0].path; //前缀
     for (let file of files)
-      file.path = file.path.replace(profix, '/');
+      file.path = file.path.replace(prefix, '/');
   };
 
   //改写路径 /key/ --> /name/  19
@@ -296,7 +307,7 @@ module.exports = function handle() {
         d_size: file.size,
         u_id,         //insertU_D(): 必需u_id, d_hash, name, time, path (缺path)
         name: dirPath.pop(),
-        time
+        time,
       }
 
       fs.rename(file.path, body.d_dir, err => { if (err) throw err; }); //用hash值来重命名
@@ -338,7 +349,7 @@ module.exports = function handle() {
   const handleHomeInfo = (ctx, body) => new Promise((resolve, reject) => {
     const { u_id } = body;
     const values = [u_id];
-    ctx.dbquery(`select key, name, path, isdir, lasttime, d_size from u_d left join documents on u_d.d_hash = documents.d_hash where u_id = $1 ;`,
+    ctx.dbquery(`select key, name, path, isdir, createtime, lasttime, d_size from u_d left join documents on u_d.d_hash = documents.d_hash where u_id = $1 ;`,
       values,
       (err, result) => {
         if (err) reject(err);
@@ -371,10 +382,72 @@ module.exports = function handle() {
       });
   });
 
+  function* handleUpload(ctx, fields, files) {
+    let res = [];
+    const time = new Date();    //统一上传时间。
+    for (let file of files.files) { //处理每个文件
+      const body = {
+        d_hash: file.hash,
+        d_dir: path.join(__dirname, `../public/assets/${file.hash}`),
+        d_size: file.size,
+        u_id: 0,
+        path: fields.path,
+        name: file.name,
+        time
+      }
+
+      fs.rename(file.path, body.d_dir, err => { if (err) throw err; }); //用hash值来重命名
+
+      yield insertDoc(ctx, body); //插入documents表
+      const { key } = yield insertU_D(ctx, body); //插入u_d表
+
+      const row = { //响应信息
+        key,
+        name: body.name,
+        path: body.path,
+        createtime: time,
+        lasttime: time,
+        isdir: false,
+        d_size: body.d_size
+      }
+     res = [...res, row];
+    }
+    return res;
+  };
+
+  const pathIsExist = (ctx, body) => new Promise((resolve, reject) => {
+    let filePath = body;
+    if (!filePath) //path不存在
+      resolve(false);
+    else if (filePath === '/') //path为根目录
+      resolve(true);
+    else {
+      filePath = filePath.match(/\d+/g);
+      const key = filePath.pop();
+      filePath = '/' + filePath.join('/') + '/';
+
+      values = [key, true];
+      ctx.dbquery(`select path from u_d where key = $1 and isdir = $2;`,
+        values,
+        (err, result) => {
+          if (err) reject(err);
+
+          if (result.rows.length === 0) //key不存在或不是文件夹
+            resolve(false);
+          else if (result.rows[0].path === filePath) //正确
+            resolve(true);
+          else
+            resolve(false); //path不对
+        });
+    }
+
+  })
+
 return {
   handleSaveShare,
   handleHomeInfo,
   handleShareInfo,
+  parseFiles,
   handleUpload,
   handleUploadDir,
   handleDelete,
@@ -390,13 +463,14 @@ return {
   insertU_D,
   handleShare,
   sendFile,
-  sendJSON,
+  sendRes,
   zip,
   delDir,
   dirTree,
-  rmProfix,
+  rmPrefix,
   rewritePath,
-  copyFiles 
+  copyFiles,
+  pathIsExist
 }
 
 

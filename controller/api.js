@@ -3,33 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const mime = require('mime-types');
 const randomstring = require('randomstring');
-const { 
-  handleSaveShare, 
-  handleHomeInfo,
-  handleShareInfo,
-  handleUpload,
-  handleUploadDir,
-  handleDelete,
-  handleDownload,
-  handleDownshare,
-  handleUnshare,
-  handleMkdir,
-  searchFiles,
-  handleMove,
-  handleMoveDir,
-  handleRename,
-  insertDoc,
-  insertU_D,
-  handleShare,
-  sendFile,
-  sendJSON,
-  zip,
-  delDir,
-  dirTree,
-  rmProfix,
-  rewritePath,
-  copyFiles
-} = require('./handle.js')();
+const handle = require('./handle.js')();
 
 
 
@@ -40,55 +14,73 @@ module.exports = {
   //主页
   homeInfo: function *() {
     const query = {u_id: 0};
-    const rows = yield handleHomeInfo(this, query);
-    sendJSON(this, rows);
+    const rows = yield handle.handleHomeInfo(this, query);
+    handle.sendRes(this, rows);
   },
   //分享页
   shareInfo: function *() {
     const query = this.query;
-    const rows = yield handleShareInfo(this, query);
-    sendJSON(this, rows);
+    const rows = yield handle.handleShareInfo(this, query);
+    handle.sendRes(this, rows);
   },
   //上传文件
   upload: function *() {
-    const { fields, files } = yield handleUpload(this);
+    const { fields, files } = yield handle.parseFiles(this);
 
-    let rows = []; //响应体
-    const time = new Date();    //统一上传时间。
-    for (let file of files.files) { //处理每个文件
-      const body = {  
-        d_hash: file.hash,
-        d_dir: path.join(__dirname, `../public/assets/${file.hash}`),
-        d_size: file.size,
-        u_id: 0,
-        path: fields.path,
-        name: file.name,
-        time
+    if (files.files.length === 0) { //无文件上传
+      const err = {
+        message: '至少上传一个文件!'
       }
-
-      fs.rename(file.path, body.d_dir, err => { if (err) throw err; }); //用hash值来重命名
-
-      yield insertDoc(this, body); //插入documents表
-      const row = yield insertU_D(this, body); //插入u_d表
-      rows = [...rows, ...row];
+      handle.sendRes(this, err);
+      return;
     }
+    const exist = yield handle.pathIsExist(this, fields.path);
+    if (!exist) { //目录错误
+      const err = {
+        message: '上传目录错误或不存在!'
+      }
+      handle.sendRes(this, err);
+      return;
+    }
+
+    //更新数据库，响应体
+    const res = yield handle.handleUpload(this, fields, files); 
+
     //响应
-    sendJSON(this, rows);
+    handle.sendRes(this, res);
   },
   //上传文件夹
   uploadDir: function *() {
-    const { fields, files } = yield handleUpload(this);  //解析请求
-    //生成文件树
-    const body = dirTree(fields, files)
-    //处理文件夹
-    yield handleUploadDir(this, body);
 
-    sendJSON(this, body);
+    const { fields, files } = yield handle.parseFiles(this);  //解析请求
+    console.log(fields, files);
+    if (files.files.length === 0) { //无文件上传
+      const err = {
+        message: '至少上传一个文件!'
+      }
+      handle.sendRes(this, err);
+      return;
+    }
+    const exist = yield handle.pathIsExist(this, fields.path);
+    if (!exist) { //目录错误
+      const err = {
+        message: '上传目录错误或不存在!'
+      }
+      handle.sendRes(this, err);
+      return;
+    }
+
+    //生成文件树
+    const body = handle.dirTree(fields, files)
+    //处理文件夹
+    yield handle.handleUploadDir(this, body);
+    console.log(body);
+    handle.sendRes(this, body);
   },
   //下载单文件
   download: function *() {
     const body = this.query;
-    const { d_dir, name } = yield handleDownload(this, body);
+    const { d_dir, name } = yield handle.handleDownload(this, body);
     //发送
     this.set('Content-disposition', 'attachment; filename=' + name);
     this.set('Content-type', mime.lookup(d_dir));
@@ -99,64 +91,64 @@ module.exports = {
   downloadzip: function *() {
     const query = this.query;
     //文件信息
-    const files = yield searchFiles(this, query);
+    const files = yield handle.searchFiles(this, query);
     //移除前缀
-    rmProfix(files);
+    handle.rmPrefix(files);
     //改写路径
-    rewritePath(files);
+    handle.rewritePath(files);
     //临时目录
     const tmp = fs.mkdtempSync(path.join(__dirname, '../public/download/'));
     //复制文件
-    copyFiles(files, tmp);
+    handle.copyFiles(files, tmp);
     //压缩文件
-    const fileInfo = yield zip(tmp);
+    const fileInfo = yield handle.zip(tmp);
     //发送文件
-    sendFile(this, fileInfo);
+    handle.sendFile(this, fileInfo);
   },
   //重命名
   rename: function *() {
     const body = this.request.body;
     body.lasttime = new Date();
-    const res = yield handleRename(this, body);
-    sendJSON(this, res);
+    const res = yield handle.handleRename(this, body);
+    handle.sendRes(this, res);
     
   },
   //移动
   move: function *() {
     const body = this.request.body;
-    let res = yield handleMove(this, body);
+    let res = yield handle.handleMove(this, body);
     if (body.isdir) {
       body.prePath += body.key + '/';
       body.newPath += body.key + '/';
       body.u_id = 0;
-      let res_dir = yield handleMoveDir(this, body);
+      let res_dir = yield handle.handleMoveDir(this, body);
     }
     res = [...res, ...res_dir];
     
-    sendJSON(this, res);
+    handle.sendRes(this, res);
   },
   //删除
   delete: function *() {
     const query = this.query;
-    const res = yield handleDelete(this, query);
-    sendJSON(this, res);
+    const res = yield handle.handleDelete(this, query);
+    handle.sendRes(this, res);
   },
   //新建文件夹
   mkdir: function *() {
     const body = this.request.body;
     body.u_id = 0;
     body.time = new Date();
-    const res = yield handleMkdir(this, body);
-    sendJSON(this, res);
+    const res = yield handle.handleMkdir(this, body);
+    handle.sendRes(this, res);
   },
   //分享
   share: function *() {
     //拿到key
     const body = this.request.body; 
     //拿到记录
-    let rows = yield searchFiles(this, body); 
+    let rows = yield handle.searchFiles(this, body); 
     //移除前缀
-    rmProfix(rows); 
+    handle.rmPrefix(rows); 
     //构造handleShare所需的信息
     const result = {
       u_id: 0,
@@ -165,39 +157,39 @@ module.exports = {
       rows
     }
     //添加share表
-    const { addr, secret } = yield handleShare(this, result); 
+    const { addr, secret } = yield handle.handleShare(this, result); 
     //响应信息
     const res = {
       addr,
       secret
     }
     //响应
-    sendJSON(this, res);
+    handle.sendRes(this, res);
   },
   //取消分享
   unshare: function *() {
     const body = this.request.body;
     body.u_id = 0;
-    const res = yield handleUnshare(this, body);
+    const res = yield handle.handleUnshare(this, body);
     //{done: true}
-    sendJSON(this, res)
+    handle.sendRes(this, res)
   },
   //下载分享
   downShare: function *() {
     //获取query
     const query = this.query;
     //查询文件信息
-    const files = yield handleDownshare(this, query);
+    const files = yield handle.handleDownshare(this, query);
     //创建临时目录
     const tmp = fs.mkdtempSync(path.join(__dirname, '../public/download/'));
     //改写文件目录
-    rewritePath(files);
+    handle.rewritePath(files);
     //复制文件到临时目录
-    copyFiles(files, tmp);
+    handle.copyFiles(files, tmp);
     //压缩
-    const fileInfo = yield zip(tmp);
+    const fileInfo = yield handle.zip(tmp);
     //发送zip
-    sendFile(this, fileInfo);
+    handle.sendFile(this, fileInfo);
   },
   //转存
   saveShare: function *() {
@@ -205,9 +197,9 @@ module.exports = {
     body.u_id = 0;
     body.time = new Date();
     //插入u_d表
-    const res = yield handleSaveShare(this, body);
+    const res = yield handle.handleSaveShare(this, body);
     //{done: true}
-    sendJSON(this, res);
+    handle.sendRes(this, res);
 
   }
  }

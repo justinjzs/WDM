@@ -58,11 +58,20 @@
         formData.append('files', file, file.webkitRelativePath);
       }
       formData.append('path', '/');
-      const init = {
-        method: 'POST',
-        body: formData
-      };
-      fetch('/uploaddir', init).then(res => console.log(res));
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/uploaddir', true);
+      xhr.onload = e => {
+        if (xhr.status == 200) {
+          console.log(JSON.parse(xhr.response));
+        }
+      }
+      xhr.send(formData);
+      // const init = {
+      //   method: 'POST',
+      //   body: formData
+      // };
+      // fetch('/uploaddir', init).then(res => console.log(res));
     }
 
     function rename() {
