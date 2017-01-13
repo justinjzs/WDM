@@ -1,4 +1,5 @@
 const formidable = require('formidable');
+const parse = require('co-body');
 const path = require('path');
 const fs = require('fs');
 const mime = require('mime-types');
@@ -13,7 +14,7 @@ require('events').EventEmitter.prototype._maxListeners = 100; //设置最大为1
 module.exports = {
   //主页
   homeInfo: function *() {
-    const query = {u_id: 0};
+    const query = this.req.user;
     const rows = yield handle.handleHomeInfo(this, query);
     handle.sendRes(this, rows);
   },
@@ -53,7 +54,6 @@ module.exports = {
   uploadDir: function *() {
 
     const { fields, files } = yield handle.parseFiles(this);  //解析请求
-    console.log(fields, files);
     if (files.files.length === 0) { //无文件上传
       const err = {
         message: '至少上传一个文件!'
@@ -74,7 +74,6 @@ module.exports = {
     const body = handle.dirTree(fields, files)
     //处理文件夹
     yield handle.handleUploadDir(this, body);
-    console.log(body);
     handle.sendRes(this, body);
   },
   //下载单文件
@@ -108,24 +107,44 @@ module.exports = {
   //重命名
   rename: function *() {
     const body = this.request.body;
-    body.lasttime = new Date();
+    body.u_id = this.req.user.u_id;
+    body.lasttime = new Date(Date.now() + (8 * 60 * 60 * 1000));
     const res = yield handle.handleRename(this, body);
+    if(!res) { //返回为undefined，key错误或不存在
+      const err = {
+        message: '非法操作！'
+      }
+      handle.sendRes(this, err);
+      return;
+    }
     handle.sendRes(this, res);
     
   },
   //移动
   move: function *() {
     const body = this.request.body;
+    body.u_id = 0;
+    body.lasttime = new Date(Date.now() + (8 * 60 * 60 * 1000));
+       
     let res = yield handle.handleMove(this, body);
+    console.log(res); 
+    if(!res) { //返回为undefined，key错误或不存在
+      const err = {
+        message: '非法操作！'
+      }
+      handle.sendRes(this, err);
+      return;
+    }
     if (body.isdir) {
       body.prePath += body.key + '/';
       body.newPath += body.key + '/';
-      body.u_id = 0;
       let res_dir = yield handle.handleMoveDir(this, body);
+      res = [...res, ...res_dir];
     }
-    res = [...res, ...res_dir];
     
+
     handle.sendRes(this, res);
+    
   },
   //删除
   delete: function *() {
@@ -136,8 +155,17 @@ module.exports = {
   //新建文件夹
   mkdir: function *() {
     const body = this.request.body;
-    body.u_id = 0;
-    body.time = new Date();
+    
+    const exist = yield handle.pathIsExist(this, body.path);
+    if (!exist) { //目录错误
+      const err = {
+        message: '目录错误或不存在!'
+      }
+      handle.sendRes(this, err);
+      return;
+    }
+    body.u_id = this.req.user.u_id;
+    body.time = new Date(Date.now() + (8 * 60 * 60 * 1000));
     const res = yield handle.handleMkdir(this, body);
     handle.sendRes(this, res);
   },
@@ -195,7 +223,7 @@ module.exports = {
   saveShare: function *() {
     const body = this.request.body; //rows
     body.u_id = 0;
-    body.time = new Date();
+    body.time = new Date(Date.now() + (8 * 60 * 60 * 1000));
     //插入u_d表
     const res = yield handle.handleSaveShare(this, body);
     //{done: true}

@@ -27,8 +27,15 @@ const dbquery = pool => function(text, values, cb) {
 }
 
 
-module.exports = function *(next) {
-  const pool = new pg.Pool(config); 
-  this.dbquery = dbquery(pool);
-  yield next;
+module.exports = {
+  middleware: function* (next) { //middleware
+    const pool = new pg.Pool(config);
+    this.dbquery = dbquery(pool);
+    yield next;
+  },
+  query: () => (dbquery(new pg.Pool(config))) //function
 }
+
+
+
+

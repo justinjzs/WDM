@@ -96,7 +96,7 @@ module.exports = function handle() {
   const insertU_D = (ctx, body) => new Promise((resolve, reject) => {
     const { u_id, d_hash, path, name, time } = body;
     const values = [u_id, d_hash, path, name, time, time, false];
-    ctx.dbquery(`insert into u_d (u_id, d_hash, path, name, createtime, lasttime, isdir) values ($1, $2, $3, $4, $5, $6, $7) returning key;`,
+    ctx.dbquery(`insert into u_d (u_id, d_hash, path, name, createtime, lasttime, isdir) values ($1, $2, $3, $4, $5, $6, $7) returning key, d_hash, name, path, isdir, createtime, lasttime;`,
       values,
       (err, result) => {
         if (err) reject(err);
@@ -105,9 +105,9 @@ module.exports = function handle() {
   })
   //重命名8
   const handleRename = (ctx, body) => new Promise((resolve, reject) => { //rename 
-    const { name, lasttime, key } = body;
-    const values = [name, lasttime, key];
-    ctx.dbquery(`update u_d set name = $1, lasttime = $2 where key = $3 returning key, name;`,
+    const { name, lasttime, key, u_id } = body;
+    const values = [name, lasttime, key, u_id];
+    ctx.dbquery(`update u_d set name = $1, lasttime = $2 where key = $3 and u_id = $4 returning key, name;`,
       values,
       (err, result) => {
         if (err) reject(err);
@@ -116,9 +116,10 @@ module.exports = function handle() {
   })
   //移动9
   const handleMove = (ctx, body) => new Promise((resolve, reject) => { //move 
-    const { prePath, newPath, key } = body;
-    const values = [prePath, newPath, key];
-    ctx.dbquery(`update u_d set path = replace(path, $1, $2) where key = $3 returning key, name, path;`,
+    const { newPath, key, lasttime, u_id } = body;
+    const values = [lasttime, newPath, key, u_id];
+    console.log(values);
+    ctx.dbquery(`update u_d set lasttime = $1, path = $2 where key = $3 and u_id = $4 returning key, path;`,
       values,
       (err, result) => {
         if (err) reject(err);
@@ -129,7 +130,7 @@ module.exports = function handle() {
   const handleMoveDir = (ctx, body) => new Promise((resolve, reject) => { //move 
     const { prePath, newPath, u_id } = body;
     const values = [prePath, newPath, u_id];
-    ctx.dbquery(`update u_d set path = replace(path, $1, $2) where u_id = $3 returning key, name, path, isdir;`,
+    ctx.dbquery(`update u_d set path = replace(path, $1, $2) where u_id = $3 returning key, path;`,
       values,
       (err, result) => {
         if (err) reject(err);
@@ -295,7 +296,7 @@ module.exports = function handle() {
       children: []
     };
 
-    const time = new Date();    //统一上传时间
+    const time = new Date(Date.now() + (8 * 60 * 60 * 1000));    //统一上传时间
 
     //产生dirtree
     for (let file of files.files) {
@@ -384,13 +385,13 @@ module.exports = function handle() {
 
   function* handleUpload(ctx, fields, files) {
     let res = [];
-    const time = new Date();    //统一上传时间。
+    const time = new Date(Date.now() + (8 * 60 * 60 * 1000));    //统一上传时间。
     for (let file of files.files) { //处理每个文件
       const body = {
         d_hash: file.hash,
         d_dir: path.join(__dirname, `../public/assets/${file.hash}`),
         d_size: file.size,
-        u_id: 0,
+        u_id: ctx.req.user.u_id,
         path: fields.path,
         name: file.name,
         time

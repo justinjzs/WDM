@@ -75,40 +75,37 @@
     }
 
     function rename() {
-      const payload = {
-        key: 3,
-        name: 'pic.jpg',
-        isdir: false
+      const json = {
+        name: 'rename.jpg',
+        key: 147
       }
-      const headers = {
-        'Accept': 'application/json, text/plain, */*',
-        'Content-Type': 'application/json'
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/rename?_method=PUT', true);
+      xhr.onload = e => {
+        if (xhr.status == 200) {
+          console.log(JSON.parse(xhr.response));
+        }
       }
-      const init = {
-        headers,
-        method: 'PUT',
-        body: JSON.stringify(payload)
-      };
-      fetch('/rename', init).then(res => console.log(res));
+      xhr.send(JSON.stringify(json));
     }
 
       function move() {
-      const payload = {
-        key: 22,
-        prePath: '/24/',
-        newPath: '/',
-        isdir: true
+      const json = {
+      key: 151,
+      prePath: '/148/',
+      newPath: '/',
+      isdir: true
+    }
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/move?_method=PUT', true);
+      xhr.onload = e => {
+        if (xhr.status == 200) {
+          console.log(JSON.parse(xhr.response));
+        }
       }
-      const headers = {
-        'Accept': 'application/json, text/plain, */*',
-        'Content-Type': 'application/json'
-      }
-      const init = {
-        headers,
-        method: 'PUT',
-        body: JSON.stringify(payload)
-      };
-      fetch('/move', init).then(res => console.log(res));
+      xhr.send(JSON.stringify(json));
     }
 
       const saveBlob = (function () {
@@ -136,8 +133,9 @@
         xhr.onload = function (e) {
           if (this.status == 200) {
             console.log(xhr.response);
+            name = xhr.getResponseHeader('Content-disposition').split('=').pop();
             var blob = this.response;
-            saveBlob(blob, 'cat.jpg');
+            saveBlob(blob, name);
           }
         }
         xhr.send();

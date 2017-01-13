@@ -5,7 +5,7 @@ const expect = require('chai').expect;
 
 
 describe('上传文件', function () {
-  it('响应类型为json', function (done) {
+  it('响应格式为json', function (done) {
     request
       .post('/upload')
       .field('path', '/')
