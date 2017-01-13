@@ -5,6 +5,10 @@ const expect = require('chai').expect;
 
 let Cookies;
 let root = [];
+let renameFile, renameDir;
+let delFile, delDir;
+let moveFile, moveDir, distDir;
+let downFile, downDir;
 
 describe('登录前请求受限的API', () => {
   it('GET /homeinfo', done => {
@@ -34,6 +38,7 @@ describe('登录', () => {
       .expect('Content-Type', /html/)
       .expect(302)
       .end((err, res) => {
+        if(err) return done(err);
         Cookies = res.headers['set-cookie'].map( cookie => 
           cookie.split(';').shift() 
         ).join('; ');
@@ -61,6 +66,7 @@ describe('GET /homeinfo', () => {
       .get('/homeinfo')
       .expect(200)
       .end((err, res) => {
+        if(err) return done(err);
         expect(res.body).to.be.an('array');
         expect(res.body.length).to.equal(0);
         done();
@@ -77,8 +83,9 @@ describe('POST /upload', () => {
       .attach('files', './files/cat.jpg')
       .attach('files', './files/tree.jpg')
       .expect(200)
-      .expect('Content-Type', '/json/')
+      .expect('Content-Type', /json/)
       .end((err, res) => {
+        if(err) return done(err);
         expect(res.body).to.be.an('array');
 
         expect(res.body[0]).to.be.an('object');
@@ -92,8 +99,8 @@ describe('POST /upload', () => {
         expect(res.body[0]).to.have.property('isdir');
         expect(res.body[0]).to.have.property('d_size');
 
-        for (let file of res.body)
-          root.push(file);
+        renameFile = res.body[0];
+        moveFile = res.body[1];
         done();
       })
   });
@@ -104,6 +111,7 @@ describe('POST /upload', () => {
       .field('path', '/')
       .expect(200)
       .end((err, res) => {
+        if(err) return done(err);
         expect(res.body).to.be.an('object');
         expect(res.body).to.have.property('message');
         expect(res.body.message).to.equal('至少上传一个文件!');
@@ -118,6 +126,7 @@ describe('POST /upload', () => {
       .attach('files', './files/cat.jpg')
       .expect(200)
       .end((err, res) => {
+        if(err) return done(err);
         expect(res.body).to.be.an('object');
         expect(res.body).to.have.property('message');
         expect(res.body.message).to.equal('上传目录错误或不存在!');
@@ -132,8 +141,9 @@ describe('POST /mkdir', () => {
       .post('/mkdir')
       .send({path: '/', name: 'doc'})
       .expect(200)
-      .expect('Content-Type', '/json/')
+      .expect('Content-Type', /json/)
       .end((err, res) => {
+        if(err) return done(err);
         expect(res.body).to.be.an('object');
         expect(res.body).to.have.property('key');
         expect(res.body).to.have.property('name');
@@ -142,7 +152,8 @@ describe('POST /mkdir', () => {
         expect(res.body).to.have.property('lasttime');
         expect(res.body).to.have.property('isdir');
 
-        root.push(res.body);
+        moveDir = res.body;
+        distDir = res.body;
         done();
       })
   });
@@ -151,8 +162,9 @@ describe('POST /mkdir', () => {
       .post('/mkdir')
       .send({path: '/123/321', name: 'doc'})
       .expect(200)
-      .expect('Content-Type', '/json/')
+      .expect('Content-Type', /json/)
       .end((err, res) => {
+        if(err) return done(err);
         expect(res.body).to.be.an('object');
         expect(res.body).to.have.property('message');
         expect(res.body.message).to.equal('目录错误或不存在!');
@@ -162,21 +174,20 @@ describe('POST /mkdir', () => {
 })
 //重命名cat.jpg
 describe('PUT /rename', () => {
-  it('rename cat.jpg', done => {
-    let key;
-    for(let file of root) {
-      if (file.name == 'cat.jpg')
-        key = file.key;
-    }
+  it('重命名', done => {
+
     request
       .post('/rename?_method=PUT')
-      .send({ name: 'pic.jpg', key })
+      .send({ name: 'pic.jpg', key: renameFile.key })
       .expect(200)
-      .expect('Content-Type', '/json/')
+      .expect('Content-Type', /json/)
       .end((err, res) => {
+        if(err) return done(err);
         expect(res.body).to.be.an('object');
-        expect(res.body.key).to.equal(key);
+        expect(res.body.key).to.equal(renameFile.key);
         expect(res.body.name).to.equal('pic.jpg');
+
+        delFile = res.body;
         done();
       })
   });
@@ -187,9 +198,127 @@ describe('PUT /rename', () => {
       .send({ name: 'pic.jpg', key: -1 })
       .expect(200)
       .end((err, res) => {
+        if(err) return done(err);
         expect(res.body).to.be.an('object');
         expect(res.body.message).to.equal('非法操作！');
         done();
       })
   });
 })
+//移动文件
+describe('PUT /move', () => {
+  it('移动文件', done => {
+    const req = {
+      key: moveFile.key,
+      prePath: moveFile.path,
+      newPath: distDir.path + distDir.key + '/',
+      isdir: false
+    }
+    request
+      .post('/move?_method=PUT')
+      .send(req)
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .end((err, res) => {
+        if(err) return done(err);
+        expect(res.body).to.be.an('array');
+        expect(res.body.length).to.equal(1);
+        expect(res.body[0].key).to.equal(req.key);
+        expect(res.body[0].path).to.be.equal(req.newPath);
+        done();
+      })
+  });
+
+    it('新建文件夹', done => {
+    request
+      .post('/mkdir')
+      .send({path: '/', name: 'del'})
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .end((err, res) => {
+        if(err) return done(err);
+        expect(res.body).to.be.an('object');
+        expect(res.body).to.have.property('key');
+        expect(res.body).to.have.property('name');
+        expect(res.body).to.have.property('path');
+        expect(res.body).to.have.property('createtime');
+        expect(res.body).to.have.property('lasttime');
+        expect(res.body).to.have.property('isdir');
+
+        distDir = res.body;
+        delDir = res.body;
+        done();
+      })
+  });
+
+  it('移动文件夹', done => {
+    const req = {
+      key: moveDir.key,
+      prePath: moveDir.path,
+      newPath: distDir.path + distDir.key + '/',
+      isdir: true
+    }
+    request
+      .post('/move?_method=PUT')
+      .send(req)
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .end((err, res) => {
+        if(err) return done(err);
+        expect(res.body).to.be.an('array');
+        expect(res.body.length).to.equal(2);
+        expect(res.body[0].key).to.equal(req.key);
+        expect(res.body[0].path).to.be.equal(req.newPath);
+        expect(res.body[1].key).to.be.equal(moveFile.key)
+        expect(res.body[1].path).to.be.equal(req.newPath + moveDir.key + '/');
+
+        done();
+      })
+  });
+})
+//下载 
+describe('GET /download', () => {
+  it('下载单个文件', done => {
+    downFile = moveFile;
+    request
+      .get(`/download?key=${downFile.key}`)
+      .expect(200)
+      .end((err, res) => {
+        if (err) return done(err);
+        console.log(res.header);
+        done();
+      })
+
+  });
+})
+
+// //删除
+describe('DELETE /delete', () => {
+  it('删除文件', done => {
+    request
+      .post('/delete?_method=DELETE')
+      .send({ key: delFile.key })
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .end((err, res) => {
+        if (err) return done(err);
+        expect(res.body).to.be.an('object');
+        expect(res.body.done).to.equal(true);
+        done()
+      })
+  });
+  it('删除文件夹', done => {
+    request
+      .post('/delete?_method=DELETE')
+      .send({key: delDir.key})
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .end((err, res) => {
+        if(err) return done(err);
+        expect(res.body).to.be.an('object');
+        expect(res.body.done).to.equal(true);
+        done()
+      })
+  })
+})
+

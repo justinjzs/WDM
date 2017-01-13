@@ -76,15 +76,46 @@ module.exports = {
     yield handle.handleUploadDir(this, body);
     handle.sendRes(this, body);
   },
-  //下载单文件
+  //下载文件
   download: function *() {
-    const body = this.query;
-    const { d_dir, name } = yield handle.handleDownload(this, body);
-    //发送
-    this.set('Content-disposition', 'attachment; filename=' + name);
-    this.set('Content-type', mime.lookup(d_dir));
-    this.body = fs.createReadStream(d_dir);
+    //keys: array
+    let keys = this.query.key;
+    if (!Array.isArray(keys))
+      keys = [keys];
+    const body = {
+      keys,
+      u_id: this.req.user.u_id
+    }
 
+    const file = yield handle.getAllFiles(this, body);
+    if (file.length === 1 && !file.isdir) { //单文件
+      console.log(file[0]);
+      const { d_dir, name } = yield handle.handleDownload(this, file[0]);
+      //发送
+      this.set('Content-disposition', 'attachment; filename=' + name);
+      this.set('Content-type', mime.lookup(name));
+      this.body = fs.createReadStream(d_dir);
+    } else if (file.length === 0) { //文件不存在
+      const err = {
+        message: '目标文件不存在!'
+      }
+      handle.sendRes(this, err);
+    } else { //多文件或文件夹
+      //文件信息
+      files = yield handle.searchFiles(this, file);
+      //移除前缀
+      handle.rmPrefix(files);
+      //改写路径
+      handle.rewritePath(files);
+      //临时目录
+      const tmp = fs.mkdtempSync(path.join(__dirname, '../public/download/'));
+      //复制文件
+      handle.copyFiles(files, tmp);
+      //压缩文件
+      const fileInfo = yield handle.zip(tmp);
+      //发送文件
+      handle.sendFile(this, fileInfo);
+    }
   },
   //多文件下载
   downloadzip: function *() {
@@ -123,11 +154,19 @@ module.exports = {
   //移动
   move: function *() {
     const body = this.request.body;
-    body.u_id = 0;
+    body.u_id = this.req.user.u_id;
     body.lasttime = new Date(Date.now() + (8 * 60 * 60 * 1000));
-       
-    let res = yield handle.handleMove(this, body);
-    console.log(res); 
+    const exist = yield handle.pathIsExist(this, body.newPath);
+
+    if (!exist) { //目录错误
+      const err = {
+        message: '移动目录错误或不存在!'
+      }
+      handle.sendRes(this, err);
+      return;
+    }
+
+    let res = yield handle.handleMove(this, body); 
     if(!res) { //返回为undefined，key错误或不存在
       const err = {
         message: '非法操作！'
@@ -135,6 +174,7 @@ module.exports = {
       handle.sendRes(this, err);
       return;
     }
+
     if (body.isdir) {
       body.prePath += body.key + '/';
       body.newPath += body.key + '/';
@@ -148,9 +188,11 @@ module.exports = {
   },
   //删除
   delete: function *() {
-    const query = this.query;
-    const res = yield handle.handleDelete(this, query);
-    handle.sendRes(this, res);
+    const body = this.request.body;
+    body.u_id = this.req.user.u_id;
+    yield handle.handleDelete(this, body);
+
+    handle.sendRes(this, {done: true});
   },
   //新建文件夹
   mkdir: function *() {

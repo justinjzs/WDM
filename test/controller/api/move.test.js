@@ -34,6 +34,7 @@ describe('移动文件(夹)', done => {
     })
     .expect(200)
     .end((err, res) => {
+      if(err) throw err;
       expect(res.body).to.be.an('array');
       expect(res.body[0].key).to.equal('147');
       expect(res.body[0].path).to.be.equal('/148/');

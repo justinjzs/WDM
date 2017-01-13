@@ -118,7 +118,6 @@ module.exports = function handle() {
   const handleMove = (ctx, body) => new Promise((resolve, reject) => { //move 
     const { newPath, key, lasttime, u_id } = body;
     const values = [lasttime, newPath, key, u_id];
-    console.log(values);
     ctx.dbquery(`update u_d set lasttime = $1, path = $2 where key = $3 and u_id = $4 returning key, path;`,
       values,
       (err, result) => {
@@ -129,21 +128,34 @@ module.exports = function handle() {
   //移动文件夹10
   const handleMoveDir = (ctx, body) => new Promise((resolve, reject) => { //move 
     const { prePath, newPath, u_id } = body;
-    const values = [prePath, newPath, u_id];
-    ctx.dbquery(`update u_d set path = replace(path, $1, $2) where u_id = $3 returning key, path;`,
+    const pathLike = '%' + prePath + '%';
+    const values = [prePath, newPath, u_id, pathLike];
+    ctx.dbquery(`update u_d set path = replace(path, $1, $2) where u_id = $3 and path like $4 returning key, path;`,
       values,
       (err, result) => {
         if (err) reject(err);
         resolve(result.rows);
       });
   })
-
+//
+  const getAllFiles = (ctx, body) => new Promise((resolve, reject) => { 
+    const { keys, u_id } = body;
+    let pathReg = '%(' + keys.join('|') + ')%'; //获得子文件的key
+    console.log(pathReg);
+    const values = [u_id];
+    ctx.dbquery(`select key, isdir, u_id from u_d where (key in (${keys.toString()}) or path similar to '${pathReg}' ) and  u_id = $1;`,
+      values,
+      (err, result) => {
+        if (err) reject(err);
+        resolve(result.rows);
+      });
+  });
 
   //下载11
   const handleDownload = (ctx, body) => new Promise((resolve, reject) => { //download 
-    const { key } = body;
-    const values = [key];
-    ctx.dbquery(`select d_dir, name from documents inner join u_d on documents.d_hash = u_d.d_hash where u_d.key = $1;`,
+    const { key, u_id } = body;
+    const values = [key, u_id];
+    ctx.dbquery(`select d_dir, name from documents inner join u_d on documents.d_hash = u_d.d_hash where u_d.key = $1 and  u_d.u_id = $2;`,
       values,
       (err, result) => {
         if (err) reject(err);
@@ -152,9 +164,11 @@ module.exports = function handle() {
   });
   //删除12
   const handleDelete = (ctx, body) => new Promise((resolve, reject) => { //download 
-    const { key } = body;
-    ctx.dbquery(`delete from u_d where key in (${key.toString()})`,
-      undefined,
+    const { u_id, key } = body;
+    const pathLike = `%${key}%`; //内部的文件
+    const values = [key, pathLike, u_id]
+    ctx.dbquery(`delete from u_d where (key = $1 or path like $2) and u_id = $3 `,
+      values,
       (err, result) => {
         if (err) reject(err);
         resolve({done: true});
@@ -173,10 +187,11 @@ module.exports = function handle() {
   });
   //查询文件14
   const searchFiles = (ctx, body) => new Promise((resolve, reject) => { //downloadzip 
-    const { key } = body;
-    const values = '(' + key.join(',') + ')';
-    ctx.dbquery(`select key, u_d.d_hash, d_dir, isdir, path, name from u_d left join documents on documents.d_hash = u_d.d_hash where u_d.key in ${values}  ;`,
-      undefined,
+    let keys = body.map(file => file.key);
+    const u_id = body[0].u_id;
+    keys = '(' + keys.join(',') + ')';
+    ctx.dbquery(`select key, u_d.d_hash, d_dir, isdir, path, name from u_d left join documents on documents.d_hash = u_d.d_hash where u_d.key in ${keys} and u_d.u_id = $1 ;`,
+      [u_id],
       (err, result) => {
         if (err) reject(err);
         resolve(result.rows);
@@ -230,7 +245,7 @@ module.exports = function handle() {
       });
   });
   //取消分享17
-  const handleUnshare = (ctx, body) => new Promise((resolve, reject) => { //download 
+  const handleUnshare = (ctx, body) => new Promise((resolve, reject) => { 
     const { addr, u_id } = body;
     const values = [addr, u_id];
     ctx.dbquery(`delete from share where addr = $1 and u_id = $2 ;`,
@@ -276,7 +291,7 @@ module.exports = function handle() {
     }
   }
   //下载分享内容21
-  const handleDownshare = (ctx, body) => new Promise((resolve, reject) => { //downloadzip 
+  const handleDownshare = (ctx, body) => new Promise((resolve, reject) => { 
     const { addr } = body;
     const values = [addr];
     ctx.dbquery(`select key, name, path, isdir, d_dir from share where addr = $1 ;`,
@@ -425,8 +440,7 @@ module.exports = function handle() {
     else {
       filePath = filePath.match(/\d+/g);
       const key = filePath.pop();
-      filePath = '/' + filePath.join('/') + '/';
-
+      filePath = '/' + filePath.length ? (filePath.join('/') + '/') : '';
       values = [key, true];
       ctx.dbquery(`select path from u_d where key = $1 and isdir = $2;`,
         values,
@@ -471,7 +485,8 @@ return {
   rmPrefix,
   rewritePath,
   copyFiles,
-  pathIsExist
+  pathIsExist,
+  getAllFiles
 }
 
 
