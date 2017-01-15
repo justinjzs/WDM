@@ -9,6 +9,13 @@ route.post('/login',
     failureRedirect: '/login'
   })
   );
+//注册
+route.post('/signup',
+  passport.authenticate('signup', {
+    successRedirect: '/home',
+    failureRedirect: '/signup'
+  })
+);
 //登出
 route.get('/logout', function *() {
   this.logout();

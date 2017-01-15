@@ -35,7 +35,7 @@ module.exports = {
       handle.sendRes(this, err);
       return;
     }
-    const exist = yield handle.pathIsExist(this, fields.path);
+    const exist = yield handle.pathIsExist(this, fields.path, this.req.user.u_id);
     if (!exist) { //目录错误
       const err = {
         message: '上传目录错误或不存在!'
@@ -61,7 +61,7 @@ module.exports = {
       handle.sendRes(this, err);
       return;
     }
-    const exist = yield handle.pathIsExist(this, fields.path);
+    const exist = yield handle.pathIsExist(this, fields.path, this.req.user.u_id);
     if (!exist) { //目录错误
       const err = {
         message: '上传目录错误或不存在!'
@@ -71,7 +71,7 @@ module.exports = {
     }
 
     //生成文件树
-    const body = handle.dirTree(fields, files)
+    const body = handle.dirTree(fields, files, this.req.user.u_id)
     //处理文件夹
     yield handle.handleUploadDir(this, body);
     handle.sendRes(this, body);
@@ -89,13 +89,12 @@ module.exports = {
 
     const file = yield handle.getAllFiles(this, body);
     if (file.length === 1 && !file.isdir) { //单文件
-      console.log(file[0]);
       const { d_dir, name } = yield handle.handleDownload(this, file[0]);
       //发送
       this.set('Content-disposition', 'attachment; filename=' + name);
       this.set('Content-type', mime.lookup(name));
       this.body = fs.createReadStream(d_dir);
-    } else if (file.length === 0) { //文件不存在
+    } else if (!file.length) { //文件不存在
       const err = {
         message: '目标文件不存在!'
       }
@@ -116,24 +115,6 @@ module.exports = {
       //发送文件
       handle.sendFile(this, fileInfo);
     }
-  },
-  //多文件下载
-  downloadzip: function *() {
-    const query = this.query;
-    //文件信息
-    const files = yield handle.searchFiles(this, query);
-    //移除前缀
-    handle.rmPrefix(files);
-    //改写路径
-    handle.rewritePath(files);
-    //临时目录
-    const tmp = fs.mkdtempSync(path.join(__dirname, '../public/download/'));
-    //复制文件
-    handle.copyFiles(files, tmp);
-    //压缩文件
-    const fileInfo = yield handle.zip(tmp);
-    //发送文件
-    handle.sendFile(this, fileInfo);
   },
   //重命名
   rename: function *() {
@@ -156,7 +137,7 @@ module.exports = {
     const body = this.request.body;
     body.u_id = this.req.user.u_id;
     body.lasttime = new Date(Date.now() + (8 * 60 * 60 * 1000));
-    const exist = yield handle.pathIsExist(this, body.newPath);
+    const exist = yield handle.pathIsExist(this, body.newPath, body.u_id);
 
     if (!exist) { //目录错误
       const err = {
@@ -174,14 +155,16 @@ module.exports = {
       handle.sendRes(this, err);
       return;
     }
-
-    if (body.isdir) {
-      body.prePath += body.key + '/';
-      body.newPath += body.key + '/';
-      let res_dir = yield handle.handleMoveDir(this, body);
-      res = [...res, ...res_dir];
-    }
     
+    for (let file of body.files) {
+      file.u_id = this.req.user.u_id;
+      if (file.isdir) {
+        file.prePath = body.prePath + file.key + '/';
+        file.newPath = body.newPath + file.key +　'/';
+        let dirInfo = yield handle.handleMoveDir(this, file);
+        res = [...res, ...dirInfo];
+      }
+    }
 
     handle.sendRes(this, res);
     
@@ -197,8 +180,9 @@ module.exports = {
   //新建文件夹
   mkdir: function *() {
     const body = this.request.body;
-    
-    const exist = yield handle.pathIsExist(this, body.path);
+    body.u_id = this.req.user.u_id;  
+
+    const exist = yield handle.pathIsExist(this, body.path, body.u_id);
     if (!exist) { //目录错误
       const err = {
         message: '目录错误或不存在!'
@@ -206,7 +190,7 @@ module.exports = {
       handle.sendRes(this, err);
       return;
     }
-    body.u_id = this.req.user.u_id;
+
     body.time = new Date(Date.now() + (8 * 60 * 60 * 1000));
     const res = yield handle.handleMkdir(this, body);
     handle.sendRes(this, res);
@@ -214,20 +198,30 @@ module.exports = {
   //分享
   share: function *() {
     //拿到key
-    const body = this.request.body; 
-    //拿到记录
-    let rows = yield handle.searchFiles(this, body); 
+    const body = this.request.body;
+    body.u_id = this.req.user.u_id;
+    //拿到所有文件
+    let files = yield handle.getAllFiles(this, body);
+    if (!files.length) {
+      const err = {
+        message: '目标文件不存在!'
+      }
+      handle.sendRes(this, err);
+      return;
+    }
+    //获取记录
+    let rows = yield handle.searchFiles(this, files); 
     //移除前缀
     handle.rmPrefix(rows); 
     //构造handleShare所需的信息
-    const result = {
-      u_id: 0,
+    const shareInfo = {
+      u_id: this.req.user.u_id,
       addr: randomstring.generate(10),
       secret: (!!+body.isSecret) ? randomstring.generate(6) : null,
       rows
     }
     //添加share表
-    const { addr, secret } = yield handle.handleShare(this, result); 
+    const { addr, secret } = yield handle.handleShare(this, shareInfo); 
     //响应信息
     const res = {
       addr,
@@ -239,7 +233,7 @@ module.exports = {
   //取消分享
   unshare: function *() {
     const body = this.request.body;
-    body.u_id = 0;
+    body.u_id = this.req.user.u_id;
     const res = yield handle.handleUnshare(this, body);
     //{done: true}
     handle.sendRes(this, res)
@@ -252,6 +246,8 @@ module.exports = {
     const files = yield handle.handleDownshare(this, query);
     //创建临时目录
     const tmp = fs.mkdtempSync(path.join(__dirname, '../public/download/'));
+    //移除前缀
+    handle.rmPrefix(files);
     //改写文件目录
     handle.rewritePath(files);
     //复制文件到临时目录
@@ -264,12 +260,35 @@ module.exports = {
   //转存
   saveShare: function *() {
     const body = this.request.body; //rows
-    body.u_id = 0;
-    body.time = new Date(Date.now() + (8 * 60 * 60 * 1000));
-    //插入u_d表
-    const res = yield handle.handleSaveShare(this, body);
+    const time = new Date(Date.now() + (8 * 60 * 60 * 1000));
+    //获取文件信息
+    const rows = yield handle.getShare(this, body);
+    handle.rmPrefix(rows); //隐含排序
+
+    const map = {};
+    for (let row of rows) { 
+      map[row.key] = row;
+      let keys = row.path.match(/\d+/g);
+      row.sharePath = keys ? keys.map(key => map[key]) : '';
+      //插入u_d表
+      row.u_id = this.req.user.u_id;
+      row.time = time;
+      row.insertPath = body.path;
+      row.key = yield handle.handleSaveShare(this, row);
+    }
     //{done: true}
-    handle.sendRes(this, res);
+    handle.sendRes(this, {done: true});
 
   }
  }
+
+const chain = (files) => {
+  const map = {};
+  for (let file of files)
+    map[file.key] = file;
+  for (let file of files) {
+    let filePath = file.path.match(/\d+/g);
+    file.path = filePath.map(key => map[key]);
+  }
+}
+

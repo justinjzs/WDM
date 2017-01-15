@@ -9,6 +9,7 @@ let renameFile, renameDir;
 let delFile, delDir;
 let moveFile, moveDir, distDir;
 let downFile, downDir;
+let shareAddr;
 
 describe('登录前请求受限的API', () => {
   it('GET /homeinfo', done => {
@@ -207,12 +208,42 @@ describe('PUT /rename', () => {
 })
 //移动文件
 describe('PUT /move', () => {
-  it('移动文件', done => {
+  it('目标目录不存在', done => {
+    const files = [
+      {
+        key: moveFile.key,
+        isdir: moveFile.isdir
+      }
+    ]
     const req = {
-      key: moveFile.key,
+      files,
+      prePath: moveFile.path,
+      newPath: '/461/',
+    }
+    request
+      .post('/move?_method=PUT')
+      .send(req)
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .end((err, res) => {
+        if(err) return done(err);
+        expect(res.body).to.be.an('object');
+        expect(res.body.message).to.equal('移动目录错误或不存在!');
+
+        done();
+      })
+  });
+  it('移动文件', done => {
+    const files = [
+      {
+        key: moveFile.key,
+        isdir: moveFile.isdir
+      }
+    ]
+    const req = {
+      files,
       prePath: moveFile.path,
       newPath: distDir.path + distDir.key + '/',
-      isdir: false
     }
     request
       .post('/move?_method=PUT')
@@ -223,7 +254,7 @@ describe('PUT /move', () => {
         if(err) return done(err);
         expect(res.body).to.be.an('array');
         expect(res.body.length).to.equal(1);
-        expect(res.body[0].key).to.equal(req.key);
+        expect(res.body[0].key).to.equal(files[0].key);
         expect(res.body[0].path).to.be.equal(req.newPath);
         done();
       })
@@ -252,11 +283,16 @@ describe('PUT /move', () => {
   });
 
   it('移动文件夹', done => {
+    const files = [
+      {
+        key: moveDir.key,
+        isdir: moveDir.isdir
+      }
+    ]
     const req = {
-      key: moveDir.key,
+      files,
       prePath: moveDir.path,
       newPath: distDir.path + distDir.key + '/',
-      isdir: true
     }
     request
       .post('/move?_method=PUT')
@@ -267,7 +303,7 @@ describe('PUT /move', () => {
         if(err) return done(err);
         expect(res.body).to.be.an('array');
         expect(res.body.length).to.equal(2);
-        expect(res.body[0].key).to.equal(req.key);
+        expect(res.body[0].key).to.equal(files[0].key);
         expect(res.body[0].path).to.be.equal(req.newPath);
         expect(res.body[1].key).to.be.equal(moveFile.key)
         expect(res.body[1].path).to.be.equal(req.newPath + moveDir.key + '/');
@@ -279,20 +315,167 @@ describe('PUT /move', () => {
 //下载 
 describe('GET /download', () => {
   it('下载单个文件', done => {
-    downFile = moveFile;
+    downFile = renameFile;
     request
       .get(`/download?key=${downFile.key}`)
       .expect(200)
+      .expect('Content-Type', /image/)
       .end((err, res) => {
         if (err) return done(err);
-        console.log(res.header);
         done();
       })
+  });
+  it('下载多个文件', done => {
+    downDir = delDir;
+    query = `key=${downDir.key}&key=${downFile.key}`;
+    request
+      .get(`/download?${query}`)
+      .expect(200)
+      .expect('Content-Type', /zip/)
+      .end((err, res) => {
+        if(err) return done(err);
+        done();
+      })
+  });
+  it('下载不存在的文件', done  => {
+    request
+      .get(`/download?key=10086`)
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .end((err, res) => {
+        if(err) return done(err);
+        expect(res.body).to.be.an('object');
+        expect(res.body.message).to.equal('目标文件不存在!');
+        done();
+      })
+  })
+})
+//分享
+describe('POST /share', () => {
+  it('公开链接', done => {
+    const req = {
+      keys: [delDir.key, renameFile.key],
+      isSecret: false
+    }
+    request
+      .post('/share')
+      .send(req)
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .end((err, res) => {
+        if(err) return done(err);
+        expect(res.body).to.be.an('object');
+        expect(res.body.addr).to.be.a('string');
+        expect(res.body.secret).to.equal(null);
 
+        shareAddr = res.body.addr;
+        done();
+      })
+  });
+  it('私密链接', done => {
+    const req = {
+      keys: [delDir.key, renameFile.key],
+      isSecret: true
+    }
+    request
+      .post('/share')
+      .send(req)
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .end((err, res) => {
+        if(err) return done(err);
+        expect(res.body).to.be.an('object');
+        expect(res.body.addr).to.be.a('string');
+        expect(res.body.secret.length).to.equal(6);
+        done();
+      })
+  });
+  it('key错误或不存在', done => {
+    const req = {
+      keys: [10086],
+      isSecret: true
+    }
+    request
+      .post('/share')
+      .send(req)
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .end((err, res) => {
+        if(err) return done(err);
+        expect(res.body).to.be.an('object');
+        expect(res.body.message).to.equal('目标文件不存在!');
+        done();
+      })
   });
 })
+//下载分享
+describe('GET /downshare', () => {
+  it('下载分享', done => {
+    const keys = `key=${downDir.key}&key=${downFile.key}`;
+    request
+      .get(`/downshare?addr=${shareAddr}&${keys}`)
+      .expect(200)
+      .expect('Content-Type', /zip/)
+      .end((err, res) => {
+        if(err) return done(err);
+        done();
+      })
+  })
+})
+//转存
+describe('POST /saveshare', () => {
+  it('转存', done => {
+    const req = {
+      addr: shareAddr,
+      keys: [downDir.key, downFile.key],
+      path: '/' + downDir.key +　'/'
+    }
+    request
+      .post('/saveshare')
+      .send(req)
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .end((err, res) => {
+        if(err) return done(err);
+        expect(res.body).to.be.an('object');
+        expect(res.body.done).to.equal(true);
+        done();
+      })
+  })
+})
+//分享页信息
+describe('GET /shareinfo', () => {
+  it('获取分享页信息', done => {
+    request
+      .get(`/shareinfo?addr=${shareAddr}`)
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .end((err, res) => {
+        if (err) return done(err);
+        expect(res.body).to.be.an('array');
+        expect(res.body.length).to.equal(4);
+        done();
+      })
+  })
+})
+//取消分享 
+describe('DELETE /unshare', () => {
+  it('取消分享', done => {
+    request
+      .post(`/unshare?_method=DELETE`)
+      .send({ addr: shareAddr })
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .end((err, res) => {
+        if (err) return done(err);
+        expect(res.body).to.be.an('object');
+        expect(res.body.done).to.equal(true);
+        done()
+      })
+  })
+})
 
-// //删除
+//删除
 describe('DELETE /delete', () => {
   it('删除文件', done => {
     request

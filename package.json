@@ -41,6 +41,8 @@
     "chai": "^3.5.0",
     "co-fs": "^1.2.0",
     "css-loader": "^0.26.1",
+    "form-data": "^2.1.2",
+    "isomorphic-fetch": "^2.2.1",
     "koa-favicon": "^1.2.1",
     "marked": "^0.3.6",
     "node-sass": "^4.1.1",

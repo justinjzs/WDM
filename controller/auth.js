@@ -1,5 +1,6 @@
 const passport = require('koa-passport')
 const query = require('./db').query(); //拿到数据库查询函数
+const crypto = require('crypto');
 
 //data ---> session
 passport.serializeUser(function(user, done) {
@@ -20,15 +21,14 @@ passport.deserializeUser(function(u_id, done) {
 //本地登陆
 let LocalStrategy = require('passport-local').Strategy
 passport.use(new LocalStrategy(function(username, password, done) {
-
-  const values = [username, password];
+  const hash = crypto.createHash('sha1');
+  hash.update(password);
+  const values = [username, hash.digest('hex')];
+  //查询数据库
   query(`select u_id from users where u_name = $1 and u_pwd = $2`,
     values,
     (err, result) => {
-      if (err) { //数据库错误
-        done(err);
-        return;
-      }
+      if (err) return done(err);
       const user = result.rows[0]; //{ key: [Number] } or undefined
       if(user)  
         done(null, user); //success
@@ -37,6 +37,34 @@ passport.use(new LocalStrategy(function(username, password, done) {
     })
 
 }))
+//本地注册
+passport.use('signup', new LocalStrategy(function(username, password, done) {
+  const hash = crypto.createHash('sha1');
+  hash.update(password);
+  const values = [username, hash.digest('hex')];
+  //查询是否重复
+  query(`select u_id from users where u_name = $1`,
+  [username],
+  (err, result) => {
+    if (err) return done(err);
+    const user = result.rows[0];
+    if(user)
+      done(null, false); //重复，注册失败
+    else
+      query(`insert into users (u_name, u_pwd) values ($1, $2) returning u_id `,  
+      values,
+      (err, result) => {
+        if (err) return done(err);
+        const user = result.rows[0];
+        if(user)
+          done(null, user);
+        else
+          done(null, false);
+      });
+
+  });
+}))
+
 //github登陆
 let GithubStrategy = require('passport-github').Strategy;
 passport.use(new GithubStrategy({

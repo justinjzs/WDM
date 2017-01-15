@@ -6,7 +6,12 @@ const randomstring = require('randomstring');
 const archiver = require('archiver');
 
 module.exports = function handle() {
-  //发送压缩包1
+  /** send zip
+   * @param {Object} ctx 
+   * @param {Object} fileInfo
+   * @param {string} fileInfo.filePath
+   * @param {string} fileInfo.fileName
+   */
   const sendFile = (ctx, fileInfo) => {
     const {filePath, fileName} = fileInfo;
     ctx.set('Content-disposition', 'attachment; filename=' + fileName);
@@ -15,13 +20,19 @@ module.exports = function handle() {
     ctx.body.on('close', () => fs.unlinkSync(filePath));
 
   }
-  //发送json格式的响应2
+  /**send response in json 
+   * @param {Object} ctx
+   * @param {Object} res - response body
+   */
   const sendRes = (ctx, res) => {
     ctx.set('Content-type', 'application/json');
     ctx.body = JSON.stringify(res);
   }
 
-  //压缩制定目录下的文件夹3
+  /**Compresses the specified folder 
+   * @param {string} tmp - the path of folder path
+   * @returns {Promise}
+   */
   const zip = tmp => new Promise((resolve, reject) => {
     if (!fs.existsSync(tmp))
       reject('tmp is not exist!');
@@ -41,7 +52,10 @@ module.exports = function handle() {
     archive.finalize();
     output.on('close', () => { delDir(tmp); resolve({ filePath, fileName }); });
   });
-  //删除目录及其内容4
+
+  /**delete specified directory
+   * @param {string} dir - directory path
+   */
   const delDir = dir => { 
     if (fs.existsSync(dir)) {
       let files = fs.readdirSync(dir);
@@ -58,7 +72,11 @@ module.exports = function handle() {
     }
   };
 
-  //上传处理函数5
+
+  /**parse upload files  (mutipart/form-data)
+   * @param {Object} ctx
+   * @returns {Promise} 
+   */
   const parseFiles = ctx => new Promise((resolve, reject) => { //处理文件上传
     const uploadDir = path.join(__dirname, `../public/assets`);
     let form = formidable.IncomingForm({
@@ -74,10 +92,21 @@ module.exports = function handle() {
         files.files = [];
       if (!Array.isArray(files.files)) //上传单个文件时，不是数组。<input name='files' />
         files.files = [files.files];
+      for(let file of files.files) 
+        fs.rename(file.path, path.join(__dirname, `../public/assets/${file.hash}`), err => { if (err) throw err; }); //用hash值来重命名
+
       resolve({ fields, files });
     });
   });
-  //插入documents表6
+
+  /**insert into table documents
+   * @param {Object} ctx
+   * @param {Object} body
+   * @param {string} body.d_hash - hash of file
+   * @param {string} body.d_dir - absolute path of file
+   * @param {number} body.d_size - size of file
+   * @returns {Promise}
+   */
   const insertDoc = (ctx, body) => new Promise((resolve, reject) => {
     const { d_hash, d_dir, d_size } = body;
     const values = [d_hash, d_dir, d_size];
@@ -92,7 +121,12 @@ module.exports = function handle() {
         resolve(result);
       });
   })
-  //插入u_d表7
+
+  /**insert into table u_d
+   * @param {Object} ctx
+   * @param {Object} body
+   * @returns {Promise}
+   */
   const insertU_D = (ctx, body) => new Promise((resolve, reject) => {
     const { u_id, d_hash, path, name, time } = body;
     const values = [u_id, d_hash, path, name, time, time, false];
@@ -103,7 +137,12 @@ module.exports = function handle() {
         resolve(result.rows[0]);
       });
   })
-  //重命名8
+
+  /**handle req to rename files
+   * @param {Object} ctx
+   * @param {Object} body
+   * @returns {Promise}
+   */
   const handleRename = (ctx, body) => new Promise((resolve, reject) => { //rename 
     const { name, lasttime, key, u_id } = body;
     const values = [name, lasttime, key, u_id];
@@ -114,34 +153,51 @@ module.exports = function handle() {
         resolve(result.rows[0]);
       });
   })
-  //移动9
+
+  /**handle req to move files
+   * @param {Object} ctx
+   * @param {Object} body
+   * @returns {Promise}
+   */
   const handleMove = (ctx, body) => new Promise((resolve, reject) => { //move 
-    const { newPath, key, lasttime, u_id } = body;
-    const values = [lasttime, newPath, key, u_id];
-    ctx.dbquery(`update u_d set lasttime = $1, path = $2 where key = $3 and u_id = $4 returning key, path;`,
+    const { newPath, files, lasttime, u_id } = body;
+    const keys = files.map(file => file.key);
+    const values = [lasttime, newPath, u_id];
+    ctx.dbquery(`update u_d set lasttime = $1, path = $2 where key in (${keys.toString()}) and u_id = $3 returning key, path, lasttime;`,
       values,
       (err, result) => {
         if (err) reject(err);
         resolve(result.rows);
       });
   })
-  //移动文件夹10
+
+  /**handle req to move folder
+   * @param {Object} ctx
+   * @param {Object} body
+   * @returns {Promise}
+   */
   const handleMoveDir = (ctx, body) => new Promise((resolve, reject) => { //move 
     const { prePath, newPath, u_id } = body;
     const pathLike = '%' + prePath + '%';
     const values = [prePath, newPath, u_id, pathLike];
-    ctx.dbquery(`update u_d set path = replace(path, $1, $2) where u_id = $3 and path like $4 returning key, path;`,
+    ctx.dbquery(`update u_d set path = replace(path, $1, $2) where u_id = $3 and path like $4 returning key, path, lasttime;`,
       values,
       (err, result) => {
         if (err) reject(err);
         resolve(result.rows);
       });
   })
-//
+
+/** get all the files info by specified keys and u_id
+ * @param {Object} ctx
+ * @param {Object} body
+ * @param {Array} body.keys
+ * @param {number} body.u_id
+ * @return {Promise}
+ */
   const getAllFiles = (ctx, body) => new Promise((resolve, reject) => { 
     const { keys, u_id } = body;
-    let pathReg = '%(' + keys.join('|') + ')%'; //获得子文件的key
-    console.log(pathReg);
+    const pathReg = '%(' + keys.join('|') + ')%'; //获得子文件的key
     const values = [u_id];
     ctx.dbquery(`select key, isdir, u_id from u_d where (key in (${keys.toString()}) or path similar to '${pathReg}' ) and  u_id = $1;`,
       values,
@@ -151,7 +207,13 @@ module.exports = function handle() {
       });
   });
 
-  //下载11
+  /**handle req to download files
+   * @param {Object} ctx
+   * @param {Object} body
+   * @param {number} body.key
+   * @param {number} body.u_id
+   * @returns {Promise}
+   */
   const handleDownload = (ctx, body) => new Promise((resolve, reject) => { //download 
     const { key, u_id } = body;
     const values = [key, u_id];
@@ -162,7 +224,14 @@ module.exports = function handle() {
         resolve(result.rows[0]);
       });
   });
-  //删除12
+
+  /**handle req to delete files 
+   * @param {Object} ctx
+   * @param {Object} body
+   * @param {number} body.key
+   * @param {number} body.u_id
+   * @returns {Promise}
+   */
   const handleDelete = (ctx, body) => new Promise((resolve, reject) => { //download 
     const { u_id, key } = body;
     const pathLike = `%${key}%`; //内部的文件
@@ -174,7 +243,12 @@ module.exports = function handle() {
         resolve({done: true});
       });
   });
-  //新建文件夹13
+
+  /**handle req to create a folder
+   * @param {Object} ctx
+   * @param {Object} body
+   * @returns {Promise}
+   */
   const handleMkdir = (ctx, body) => new Promise((resolve, reject) => { //download 
     const { u_id, path, name, time } = body;
     const values = [u_id, path, name, time, time, true];
@@ -185,7 +259,14 @@ module.exports = function handle() {
         resolve(result.rows[0]);
       });
   });
-  //查询文件14
+
+  /**search files info for download 
+ * @param {Object} ctx
+ * @param {Array} body
+ * @param {number} body[].key
+ * @param {number} body[].u_id
+ * @return {Promise}
+ */
   const searchFiles = (ctx, body) => new Promise((resolve, reject) => { //downloadzip 
     let keys = body.map(file => file.key);
     const u_id = body[0].u_id;
@@ -198,7 +279,11 @@ module.exports = function handle() {
       });
   });
 
-  //上传文件夹15
+
+  /** handle to uplaod folder
+   * @param {Object} ctx
+   * @param {Object} level - returned by dirTree function
+   */
   function* handleUploadDir(ctx, level) {
     while (level.length) { //为空即全部完成。
       let nextLevel = []; //下一层
@@ -229,7 +314,12 @@ module.exports = function handle() {
     }
 
   }
-  //分享16
+
+ /** handle req to add share
+  * @param {Object} ctx 
+  * @param {Object} body
+  * @returns {Promise}
+  */
   const handleShare = (ctx, body) => new Promise((resolve, reject) => {  
     let { u_id, addr, secret, rows } = body;
     secret = secret && `'${secret}'`;
@@ -244,7 +334,14 @@ module.exports = function handle() {
         resolve(result.rows[0]);
       });
   });
-  //取消分享17
+
+   /** handle req to unshare
+  * @param {Object} ctx 
+  * @param {Object} body
+  * @param {number} body.u_id
+  * @param {string} body.addr
+  * @returns {Promise}
+  */
   const handleUnshare = (ctx, body) => new Promise((resolve, reject) => { 
     const { addr, u_id } = body;
     const values = [addr, u_id];
@@ -256,8 +353,11 @@ module.exports = function handle() {
       });
   });
 
-  //按文件层次排序，并移除公共前缀18
-  //files:Array of { path }
+
+ /**Sort by file hierarchy and remove common prefixes
+  * @param {Array} files
+  * @param {string} files[].path
+  */
   const rmPrefix = files => {
     files.sort((a, b) => a.path.match(/\//g).length > b.path.match(/\//g).length); //排序
     const prefix = files[0].path; //前缀
@@ -265,8 +365,13 @@ module.exports = function handle() {
       file.path = file.path.replace(prefix, '/');
   };
 
-  //改写路径 /key/ --> /name/  19
-  //files: Array of { key, name, path }
+
+  /**rewrite the path to truth path
+   * @param {Array} files
+   * @param {number} files[].key
+   * @param {string} files[].name
+   * @param {string} files[].path
+   */
   const rewritePath = files => {
     const dirMap = {};
     for (let file of files)
@@ -278,8 +383,13 @@ module.exports = function handle() {
     }
   }
 
-  //复制文件到指定目录下20
-  //files:Array of { path, isdir, d_dir }
+  /**Copy files to the specified directory
+   * @param {Array} files
+   * @param {string} dir - the path of directory
+   * @param {string} files[].path
+   * @param {boolean} files[].isdir
+   * @param {string} files[].d_dir
+   */
   const copyFiles = (files, dir) => {
     for (let file of files) {
       //移动
@@ -290,7 +400,13 @@ module.exports = function handle() {
         fs.createReadStream(file.d_dir).pipe(fs.createWriteStream(dist));
     }
   }
-  //下载分享内容21
+
+  /**handle req to download shared files
+   * @param {Object} ctx
+   * @param {Object} body
+   * @param {string} body.addr
+   * @returns {Promise} 
+   */
   const handleDownshare = (ctx, body) => new Promise((resolve, reject) => { 
     const { addr } = body;
     const values = [addr];
@@ -303,8 +419,13 @@ module.exports = function handle() {
   });
 
 
-  //生成文件树22
-  function dirTree(fields, files, u_id = 0) {
+
+  /**generate the files tree
+   * @param {Object} fields
+   * @param {Object} files
+   * @param {number} u_id
+   */
+  function dirTree(fields, files, u_id) {
     const root = {
       path: fields.path,
       name: '',
@@ -315,7 +436,7 @@ module.exports = function handle() {
 
     //产生dirtree
     for (let file of files.files) {
-      let dirPath = file.name.split('/');
+      let dirPath = file.name.split(/\/|\?/); //用?分隔是测试时用的
       //记录文件信息
       const body = {  //insertDoc(): 必需d_hash, d_dir, d_size, 
         d_hash: file.hash,
@@ -325,8 +446,6 @@ module.exports = function handle() {
         name: dirPath.pop(),
         time,
       }
-
-      fs.rename(file.path, body.d_dir, err => { if (err) throw err; }); //用hash值来重命名
 
       let preDir = root;
 
@@ -361,7 +480,13 @@ module.exports = function handle() {
 
     return root.children;
   }
-  //获取主页信息23
+
+  /** handle req to gain the home page info 
+  * @param {Object} ctx 
+  * @param {Object} body
+  * @param {number} body.u_id
+  * @returns {Promise}
+  */  
   const handleHomeInfo = (ctx, body) => new Promise((resolve, reject) => {
     const { u_id } = body;
     const values = [u_id];
@@ -372,7 +497,13 @@ module.exports = function handle() {
         resolve(result.rows);
       });
   });
-  //获取分享页信息24
+
+  /** handle req to gain the share page info 
+  * @param {Object} ctx 
+  * @param {Object} body
+  * @param {string} body.addr
+  * @returns {Promise}
+  */ 
   const handleShareInfo = (ctx, body) => new Promise((resolve, reject) => {
     const { addr } = body;
     const values = [addr];
@@ -384,20 +515,30 @@ module.exports = function handle() {
       });
   });
 
+/** handle req to save shared files
+ * @param {Object} ctx
+ * @param {Object} body
+ * @returns {Promise}
+ */
   const handleSaveShare = (ctx, body) => new Promise((resolve, reject) => {
-    const { u_id, time, rows } = body;
-    let values = rows.map( row => (
-      `('${row.name}', '${row.path}', ${row.isdir}, '${row.d_hash}', ${u_id}, ${time}, ${time})`
-    ) );
-    values = values.join(',');
-    ctx.dbquery(`insert into u_d (name, path, isdir, d_hash, u_id, createtime, lasttime) values ${values} returning key ;`,
+    const { name, insertPath, sharePath, isdir, d_hash, u_id, time } = body;
+    let newPath = sharePath ? sharePath.map( f => f.key ).join('/') + '/' : '';
+    newPath = insertPath + newPath ;
+    const values = [name, newPath, isdir, d_hash, u_id, time, time];
+    ctx.dbquery(`insert into u_d (name, path, isdir, d_hash, u_id, createtime, lasttime) values ($1, $2, $3, $4, $5, $6, $7) returning key ;`,
       values,
       (err, result) => {
         if (err) reject(err);
-        resolve({done: true});
+        resolve(result.rows[0].key);
       });
   });
 
+/** handle req to upload files
+ * @param {Object} ctx
+ * @param {Object} fields
+ * @param {Object} files
+ * @param {Array} files.files
+ */
   function* handleUpload(ctx, fields, files) {
     let res = [];
     const time = new Date(Date.now() + (8 * 60 * 60 * 1000));    //统一上传时间。
@@ -411,8 +552,6 @@ module.exports = function handle() {
         name: file.name,
         time
       }
-
-      fs.rename(file.path, body.d_dir, err => { if (err) throw err; }); //用hash值来重命名
 
       yield insertDoc(ctx, body); //插入documents表
       const { key } = yield insertU_D(ctx, body); //插入u_d表
@@ -431,8 +570,13 @@ module.exports = function handle() {
     return res;
   };
 
-  const pathIsExist = (ctx, body) => new Promise((resolve, reject) => {
-    let filePath = body;
+  /** Determine whether the path exists
+  * @param {Object} ctx
+  * @param {string} filePath
+  * @param {number} u_id
+  * @returns {Promise}
+  */
+  const pathIsExist = (ctx, filePath, u_id) => new Promise((resolve, reject) => {
     if (!filePath) //path不存在
       resolve(false);
     else if (filePath === '/') //path为根目录
@@ -441,8 +585,8 @@ module.exports = function handle() {
       filePath = filePath.match(/\d+/g);
       const key = filePath.pop();
       filePath = '/' + filePath.length ? (filePath.join('/') + '/') : '';
-      values = [key, true];
-      ctx.dbquery(`select path from u_d where key = $1 and isdir = $2;`,
+      values = [key, true, u_id];
+      ctx.dbquery(`select path from u_d where key = $1 and isdir = $2 and u_id = $3;`,
         values,
         (err, result) => {
           if (err) reject(err);
@@ -456,7 +600,25 @@ module.exports = function handle() {
         });
     }
 
-  })
+  });
+
+/** gain info of files which specified by keys and addr
+ * @param {Object} ctx
+ * @param {Object} body
+ * @param {string} body.addr - share page address
+ * @param {Array} body.keys - files key
+ * @returns {Promise}
+ */
+const getShare = (ctx, body) => new Promise((resolve, reject) => {
+  const { addr, keys } = body;
+  const pathReg = '%(' + keys.join('|') + ')%';
+  ctx.dbquery(`select key, d_hash, path, name, isdir from share where (key in (${keys.toString()}) or path similar to '${pathReg}' ) and  addr = $1;`,
+    [addr],
+    (err, result) => {
+      if (err) reject(err);
+      resolve(result.rows);
+    });
+ });
 
 return {
   handleSaveShare,
@@ -486,7 +648,8 @@ return {
   rewritePath,
   copyFiles,
   pathIsExist,
-  getAllFiles
+  getAllFiles,
+  getShare
 }
 
 

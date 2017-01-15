@@ -18,5 +18,9 @@ module.exports = {
 
   login: function *() {
     this.body = yield render('login');
+  },
+
+  signup: function *() {
+    this.body = yield render('signup');
   }
 }
