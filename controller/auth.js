@@ -4,6 +4,7 @@ const crypto = require('crypto');
 
 //data ---> session
 passport.serializeUser(function(user, done) {
+
   done(null, user.u_id)
 })
 //session ----> data
@@ -73,19 +74,19 @@ passport.use(new GithubStrategy({
   callbackURL: 'http://localhost:3000/auth/github/callback'
 },
   function(accessToken, refreshToken, profile, done) {
-    query(`select u_id from users where u_github = $1`,
-    [profile.username],
+    query(`select u_id from users where u_gitId = $1`,
+    [+profile.id],
     (err, result) => {
       if (err) { //数据库错误
         done(err);
         return;
       }
-      const user = result.rows[0]; //{ key: [Number] } or undefined
+      const user = result.rows[0]; //{ u_id: [Number] } or undefined
       if(user)    //老用户
         done(null, user); 
       else    //新用户
-        query(`insert into users ( u_github ) values ( $1 ) returning u_id`,     
-        [profile.username],
+        query(`insert into users ( u_gitId, u_gitName ) values ( $1, $2 ) returning u_id`,     
+        [+profile.id, profile.username],
         (err, result) => {
           if (err) {
             done(err);
@@ -96,3 +97,34 @@ passport.use(new GithubStrategy({
     });
   }
 ))
+
+let GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
+passport.use(new GoogleStrategy({
+  clientID: "941570385690-1jc6fm91oud5glts4t75nmers0fm640f.apps.googleusercontent.com",
+  clientSecret: "w7huTARpWkvh7aE86za37dTX",
+  callbackURL: "http://localhost:3000/auth/google/callback"
+}, 
+function(accessToken, refreshToken, profile, done) {
+  query(`select u_id from users where u_googleId = $1`,
+    [+profile.id],
+    (err, result) => {
+      if (err) { //数据库错误
+        done(err);
+        return;
+      }
+      const user = result.rows[0]; //{ u_id: [Number] } or undefined
+      if (user)    //老用户
+        done(null, user);
+      else    //新用户
+        query(`insert into users ( u_googleId, u_googleName ) values ( $1, $2 ) returning u_id`,
+          [+profile.id, profile.displayName],
+          (err, result) => {
+            if (err) {
+              done(err);
+              return;
+            }
+            done(null, result.rows[0]); //把user传出
+          })
+    });
+
+}))

@@ -10,7 +10,6 @@ const api = require('./routes/api');
 const authapi = require('./routes/authapi');
 const auth = require('./routes/auth')
 const db = require('./controller/db').middleware;
-const bodyParse = require('./controller/bodyparse');
 const bodyParser = require('koa-bodyparser');
 const session = require('koa-generic-session');
 const passport = require('koa-passport');
@@ -38,7 +37,7 @@ app.use(api.routes()); //公共api路由
 app.use(auth.routes()); //认证路由
 
 
-app.use(function*(next) { //
+app.use(function*(next) { //拦截未登录的操作
   if (this.isAuthenticated()) {
     yield next
   } else {

@@ -27,7 +27,9 @@
     "koa-static": "^2.0.0",
     "mime-types": "^2.1.13",
     "passport-github": "^1.1.0",
+    "passport-google-oauth": "^1.0.0",
     "passport-local": "^1.0.0",
+    "passport-qq": "0.0.3",
     "pg": "^6.1.2",
     "randomstring": "^1.1.5"
   },
@@ -41,8 +43,6 @@
     "chai": "^3.5.0",
     "co-fs": "^1.2.0",
     "css-loader": "^0.26.1",
-    "form-data": "^2.1.2",
-    "isomorphic-fetch": "^2.2.1",
     "koa-favicon": "^1.2.1",
     "marked": "^0.3.6",
     "node-sass": "^4.1.1",

@@ -5,6 +5,22 @@ const expect = require('chai').expect;
 
 
 describe('上传文件', function () {
+  it('登陆', done => {
+    request
+      .post('/login')
+      .type('form')
+      .send({ username: 'test', password: 'test' })
+      .expect('Location', '/home')
+      .expect('Content-Type', /html/)
+      .expect(302)
+      .end((err, res) => {
+        if (err) return done(err);
+        Cookies = res.headers['set-cookie'].map(cookie =>
+          cookie.split(';').shift()
+        ).join('; ');
+        done();
+      })
+  });
   it('响应格式为json', function (done) {
     request
       .post('/upload')
@@ -22,6 +38,7 @@ describe('上传文件', function () {
       .attach('files', '../files/tree.jpg')
       .expect(200)
       .end((err, res) => {
+        if(err) return done(err);
         expect(res.body).to.be.an('array');
         expect(res.body[0]).to.be.an('object');
         expect(res.body).to.have.length(2);
@@ -36,6 +53,7 @@ describe('上传文件', function () {
       .attach('files', '../files/cat.jpg')
       .expect(200)
       .end((err, res) => {
+        if(err) return done(err);
         expect(res.body[0]).to.have.property('key');
         expect(res.body[0]).to.have.property('name');
         expect(res.body[0]).to.have.property('path');
@@ -53,6 +71,7 @@ describe('上传文件', function () {
       .field('path', '/')
       .expect(200)
       .end((err, res) => {
+        if(err) return done(err);
         expect(res.body).to.be.an('object');
         expect(res.body).to.have.property('message');
         expect(res.body.message).to.equal('至少上传一个文件!');
@@ -67,6 +86,7 @@ describe('上传文件', function () {
       .attach('files', '../files/cat.jpg')
       .expect(200)
       .end((err, res) => {
+        if(err) return done(err);
         expect(res.body).to.be.an('object');
         expect(res.body).to.have.property('message');
         expect(res.body.message).to.equal('上传目录错误或不存在!');

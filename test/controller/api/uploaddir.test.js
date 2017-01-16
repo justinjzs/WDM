@@ -6,7 +6,7 @@ const expect = require('chai').expect;
 
 
 describe('上传文件夹', function () {
-  it('登陆成功,重定向', done => {
+  it('登陆', done => {
     request
       .post('/login')
       .type('form')

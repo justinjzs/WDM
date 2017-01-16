@@ -29,7 +29,19 @@ route.get('/auth/github',
 route.get('/auth/github/callback', 
   passport.authenticate('github', {
     successRedirect: '/home',
-    failureRedirect: '/'
+    failureRedirect: '/login'
+  })
+);
+
+//google 登录
+route.get('/auth/google', 
+  passport.authenticate('google', { scope: ['profile'] })
+);
+
+route.get('/auth/google/callback', 
+  passport.authenticate('google', {
+    successRedirect: '/home',
+    failureRedirect: '/login'
   })
 );
 

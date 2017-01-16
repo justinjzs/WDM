@@ -14,8 +14,8 @@ require('events').EventEmitter.prototype._maxListeners = 100; //设置最大为1
 module.exports = {
   //主页
   homeInfo: function *() {
-    const query = this.req.user;
-    const rows = yield handle.handleHomeInfo(this, query);
+    const u_id = this.req.user.u_id;
+    const rows = yield handle.handleHomeInfo(this, u_id);
     handle.sendRes(this, rows);
   },
   //分享页
@@ -32,16 +32,14 @@ module.exports = {
       const err = {
         message: '至少上传一个文件!'
       }
-      handle.sendRes(this, err);
-      return;
+      return handle.sendRes(this, err);
     }
     const exist = yield handle.pathIsExist(this, fields.path, this.req.user.u_id);
     if (!exist) { //目录错误
       const err = {
         message: '上传目录错误或不存在!'
       }
-      handle.sendRes(this, err);
-      return;
+      return handle.sendRes(this, err);
     }
 
     //更新数据库，响应体
@@ -58,28 +56,28 @@ module.exports = {
       const err = {
         message: '至少上传一个文件!'
       }
-      handle.sendRes(this, err);
-      return;
+      return handle.sendRes(this, err);
     }
     const exist = yield handle.pathIsExist(this, fields.path, this.req.user.u_id);
     if (!exist) { //目录错误
       const err = {
         message: '上传目录错误或不存在!'
       }
-      handle.sendRes(this, err);
-      return;
+      return handle.sendRes(this, err);
     }
 
     //生成文件树
     const body = handle.dirTree(fields, files, this.req.user.u_id)
-    //处理文件夹
+    //更新数据库
     yield handle.handleUploadDir(this, body);
     handle.sendRes(this, body);
   },
+
   //下载文件
   download: function *() {
     //keys: array
     let keys = this.query.key;
+    //只有一个key时不是数组
     if (!Array.isArray(keys))
       keys = [keys];
     const body = {
@@ -126,8 +124,7 @@ module.exports = {
       const err = {
         message: '非法操作！'
       }
-      handle.sendRes(this, err);
-      return;
+      return handle.sendRes(this, err);
     }
     handle.sendRes(this, res);
     
@@ -137,14 +134,13 @@ module.exports = {
     const body = this.request.body;
     body.u_id = this.req.user.u_id;
     body.lasttime = new Date(Date.now() + (8 * 60 * 60 * 1000));
-    const exist = yield handle.pathIsExist(this, body.newPath, body.u_id);
 
+    const exist = yield handle.pathIsExist(this, body.newPath, body.u_id);
     if (!exist) { //目录错误
       const err = {
         message: '移动目录错误或不存在!'
       }
-      handle.sendRes(this, err);
-      return;
+      return handle.sendRes(this, err);
     }
 
     let res = yield handle.handleMove(this, body); 
@@ -152,10 +148,9 @@ module.exports = {
       const err = {
         message: '非法操作！'
       }
-      handle.sendRes(this, err);
-      return;
+      return handle.sendRes(this, err);
     }
-    
+    //更改文件夹内文件的路径
     for (let file of body.files) {
       file.u_id = this.req.user.u_id;
       if (file.isdir) {
@@ -171,9 +166,17 @@ module.exports = {
   },
   //删除
   delete: function *() {
-    const body = this.request.body;
-    body.u_id = this.req.user.u_id;
-    yield handle.handleDelete(this, body);
+    const { keys } = this.request.body;
+    const u_id = this.req.user.u_id;
+
+    if(!Array.isArray(keys)) { //未指定keys，或keys类型错误
+      const err = {
+        message: '必须指定要删除的文件!'
+      }
+      return handle.sendRes(this, err);
+    }
+    for (let key of keys)
+      yield handle.handleDelete(this, key, u_id);
 
     handle.sendRes(this, {done: true});
   },
@@ -181,17 +184,16 @@ module.exports = {
   mkdir: function *() {
     const body = this.request.body;
     body.u_id = this.req.user.u_id;  
+    body.time = new Date(Date.now() + (8 * 60 * 60 * 1000));
 
     const exist = yield handle.pathIsExist(this, body.path, body.u_id);
     if (!exist) { //目录错误
       const err = {
         message: '目录错误或不存在!'
       }
-      handle.sendRes(this, err);
-      return;
+      return handle.sendRes(this, err);
     }
-
-    body.time = new Date(Date.now() + (8 * 60 * 60 * 1000));
+    //新建文件夹
     const res = yield handle.handleMkdir(this, body);
     handle.sendRes(this, res);
   },
@@ -206,8 +208,7 @@ module.exports = {
       const err = {
         message: '目标文件不存在!'
       }
-      handle.sendRes(this, err);
-      return;
+      return handle.sendRes(this, err);
     }
     //获取记录
     let rows = yield handle.searchFiles(this, files); 
@@ -259,7 +260,7 @@ module.exports = {
   },
   //转存
   saveShare: function *() {
-    const body = this.request.body; //rows
+    const body = this.request.body; 
     const time = new Date(Date.now() + (8 * 60 * 60 * 1000));
     //获取文件信息
     const rows = yield handle.getShare(this, body);

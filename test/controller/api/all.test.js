@@ -1,4 +1,4 @@
-const app = require('../../app');
+const app = require('../../../app');
 
 const request = require('supertest').agent(app.listen());
 const expect = require('chai').expect;
@@ -478,30 +478,36 @@ describe('DELETE /unshare', () => {
 //删除
 describe('DELETE /delete', () => {
   it('删除文件', done => {
+    const req = {
+      keys: [delDir.key, delFile.key]
+    }
     request
       .post('/delete?_method=DELETE')
-      .send({ key: delFile.key })
+      .send(req)
       .expect(200)
       .expect('Content-Type', /json/)
       .end((err, res) => {
         if (err) return done(err);
         expect(res.body).to.be.an('object');
         expect(res.body.done).to.equal(true);
-        done()
+        done();
       })
   });
-  it('删除文件夹', done => {
+  it('未指定删除的文件', done => {
+    const req = {
+    }
     request
       .post('/delete?_method=DELETE')
-      .send({key: delDir.key})
+      .send(req)
       .expect(200)
       .expect('Content-Type', /json/)
       .end((err, res) => {
-        if(err) return done(err);
+        if (err) return done(err);
         expect(res.body).to.be.an('object');
-        expect(res.body.done).to.equal(true);
-        done()
+        expect(res.body.message).to.equal('必须指定要删除的文件!');
+        done();
       })
-  })
+  });
+
 })
 

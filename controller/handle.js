@@ -232,8 +232,8 @@ module.exports = function handle() {
    * @param {number} body.u_id
    * @returns {Promise}
    */
-  const handleDelete = (ctx, body) => new Promise((resolve, reject) => { //download 
-    const { u_id, key } = body;
+  const handleDelete = (ctx, key, u_id) => new Promise((resolve, reject) => { //download 
+
     const pathLike = `%${key}%`; //内部的文件
     const values = [key, pathLike, u_id]
     ctx.dbquery(`delete from u_d where (key = $1 or path like $2) and u_id = $3 `,
@@ -374,9 +374,8 @@ module.exports = function handle() {
    */
   const rewritePath = files => {
     const dirMap = {};
-    for (let file of files)
-      dirMap[file.key] = file.name;
     for (let file of files) {
+      dirMap[file.key] = file.name;
       let temp = file.path.split('/');
       temp = temp.map(key => key && dirMap[+key]);
       file.path = temp.join('/') + file.name;
@@ -487,11 +486,9 @@ module.exports = function handle() {
   * @param {number} body.u_id
   * @returns {Promise}
   */  
-  const handleHomeInfo = (ctx, body) => new Promise((resolve, reject) => {
-    const { u_id } = body;
-    const values = [u_id];
+  const handleHomeInfo = (ctx, u_id) => new Promise((resolve, reject) => {
     ctx.dbquery(`select key, name, path, isdir, createtime, lasttime, d_size from u_d left join documents on u_d.d_hash = documents.d_hash where u_id = $1 ;`,
-      values,
+      [u_id],
       (err, result) => {
         if (err) reject(err);
         resolve(result.rows);
