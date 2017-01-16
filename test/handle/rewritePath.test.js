@@ -1,5 +1,5 @@
 const expect = require('chai').expect;
-const handle = require('../../../controller/handle');
+const handle = require('../../controller/handle');
 const { rmPrefix, rewritePath } = handle();
 /* 文件结构 
     f1

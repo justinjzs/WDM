@@ -1,4 +1,4 @@
-const app = require('../../../app');
+const app = require('../../app');
 const path = require('path');
 
 const request = require('supertest').agent(app.listen());
@@ -27,9 +27,9 @@ describe('上传文件夹', function () {
     request
       .post('/uploaddir')
       .field('path', '/')
-      .attach('files', '../files/pic/fox.jpg', `pic?fox.jpg`)
-      .attach('files', '../files/pic/tree.jpg', `pic?tree.jpg`)
-      .attach('files', '../files/pic/test/cat.jpg', `pic?test?cat.jpg`)
+      .attach('files', path.join(__dirname, './files/pic/fox.jpg'), `pic?fox.jpg`)
+      .attach('files', path.join(__dirname, './files/pic/tree.jpg'), `pic?tree.jpg`)
+      .attach('files', path.join(__dirname, './files/pic/test/cat.jpg'), `pic?test?cat.jpg`)
       .expect('Content-Type', /json/)
       .expect(200)
       .expect('Content-Type', /json/)
@@ -44,11 +44,11 @@ describe('上传文件夹', function () {
     request
       .post('/uploaddir')
       .field('path', '/999/9999/')
-      .attach('files', '../files/pic/fox.jpg', `pic?fox.jpg`)
-      .attach('files', '../files/pic/tree.jpg', `pic?tree.jpg`)
-      .attach('files', '../files/pic/test/cat.jpg', `pic?test?cat.jpg`)
+      .attach('files', path.join(__dirname, './files/pic/fox.jpg'), `pic?fox.jpg`)
+      .attach('files', path.join(__dirname, './files/pic/tree.jpg'), `pic?tree.jpg`)
+      .attach('files', path.join(__dirname, './files/pic/test/cat.jpg'), `pic?test?cat.jpg`)
       .expect('Content-Type', /json/)
-      .expect(200)
+      .expect(500)
       .expect('Content-Type', /json/)
       .end((err, res) => {
         if (err) return done(err);

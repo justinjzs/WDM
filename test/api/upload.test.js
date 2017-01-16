@@ -1,5 +1,5 @@
-const app = require('../../../app');
-
+const app = require('../../app');
+const path = require('path');
 const request = require('supertest').agent(app.listen());
 const expect = require('chai').expect;
 
@@ -25,7 +25,7 @@ describe('上传文件', function () {
     request
       .post('/upload')
       .field('path', '/')
-      .attach('files', '../files/cat.jpg')
+      .attach('files', path.join(__dirname, './files/cat.jpg'))
       .expect('Content-Type', /json/)
       .expect(200, done);
   });
@@ -34,8 +34,8 @@ describe('上传文件', function () {
     request
       .post('/upload')
       .field('path', '/')
-      .attach('files', '../files/cat.jpg')
-      .attach('files', '../files/tree.jpg')
+      .attach('files', path.join(__dirname, './files/cat.jpg'))
+      .attach('files', path.join(__dirname, './files/tree.jpg'))
       .expect(200)
       .end((err, res) => {
         if(err) return done(err);
@@ -50,7 +50,7 @@ describe('上传文件', function () {
     request
       .post('/upload')
       .field('path', '/')
-      .attach('files', '../files/cat.jpg')
+      .attach('files', path.join(__dirname, './files/cat.jpg'))
       .expect(200)
       .end((err, res) => {
         if(err) return done(err);
@@ -69,7 +69,7 @@ describe('上传文件', function () {
     request
       .post('/upload')
       .field('path', '/')
-      .expect(200)
+      .expect(500)
       .end((err, res) => {
         if(err) return done(err);
         expect(res.body).to.be.an('object');
@@ -83,8 +83,8 @@ describe('上传文件', function () {
     request
       .post('/upload')
       .field('path', '/123/321/')
-      .attach('files', '../files/cat.jpg')
-      .expect(200)
+      .attach('files', path.join(__dirname, './files/cat.jpg'))
+      .expect(500)
       .end((err, res) => {
         if(err) return done(err);
         expect(res.body).to.be.an('object');

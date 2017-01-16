@@ -1,5 +1,5 @@
 const expect = require('chai').expect;
-const handle = require('../../../controller/handle');
+const handle = require('../../controller/handle');
 const { rmPrefix } = handle();
 
 describe('移除同层文件的公共前缀并排序(同文件夹内)', () => {

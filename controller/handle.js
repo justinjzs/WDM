@@ -88,13 +88,15 @@ module.exports = function handle() {
 
     form.parse(ctx.req, (err, fields, files) => {
       if (err) reject(err);
-      if (!files.files) //上传文件为空
-        files.files = [];
-      if (!Array.isArray(files.files)) //上传单个文件时，不是数组。<input name='files' />
-        files.files = [files.files];
-      for(let file of files.files) 
-        fs.rename(file.path, path.join(__dirname, `../public/assets/${file.hash}`), err => { if (err) throw err; }); //用hash值来重命名
+      files = files.files; //files 为前端<input>的name属性
 
+      if (!files) //上传文件为空
+        files = [];
+      if (!Array.isArray(files)) //上传单个文件时，不是数组。<input name='files' />
+        files = [files];
+
+      for(let file of files) 
+        fs.rename(file.path, path.join(__dirname, `../public/assets/${file.hash}`), err => { if (err) throw err; }); //用hash值来重命名
       resolve({ fields, files });
     });
   });
@@ -421,8 +423,9 @@ module.exports = function handle() {
 
   /**generate the files tree
    * @param {Object} fields
-   * @param {Object} files
+   * @param {Array} files
    * @param {number} u_id
+   * @returns {Array}
    */
   function dirTree(fields, files, u_id) {
     const root = {
@@ -434,7 +437,7 @@ module.exports = function handle() {
     const time = new Date(Date.now() + (8 * 60 * 60 * 1000));    //统一上传时间
 
     //产生dirtree
-    for (let file of files.files) {
+    for (let file of files) {
       let dirPath = file.name.split(/\/|\?/); //用?分隔是测试时用的
       //记录文件信息
       const body = {  //insertDoc(): 必需d_hash, d_dir, d_size, 
@@ -533,13 +536,12 @@ module.exports = function handle() {
 /** handle req to upload files
  * @param {Object} ctx
  * @param {Object} fields
- * @param {Object} files
- * @param {Array} files.files
+ * @param {Array} files
  */
   function* handleUpload(ctx, fields, files) {
     let res = [];
     const time = new Date(Date.now() + (8 * 60 * 60 * 1000));    //统一上传时间。
-    for (let file of files.files) { //处理每个文件
+    for (let file of files) { //处理每个文件
       const body = {
         d_hash: file.hash,
         d_dir: path.join(__dirname, `../public/assets/${file.hash}`),

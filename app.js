@@ -36,8 +36,13 @@ app.use(api.routes()); //公共api路由
 
 app.use(auth.routes()); //认证路由
 
+app.use(function *(next) {
+  yield next;
+  if ( this.body || !this.idempotent ) return;
+  this.redirect( '/404.html' )
+});
 
-app.use(function*(next) { //拦截未登录的操作
+app.use(function*(next) { //拦截未认证的操作
   if (this.isAuthenticated()) {
     yield next
   } else {
@@ -48,11 +53,7 @@ app.use(function*(next) { //拦截未登录的操作
 app.use(authPage.routes());   //认证页面路由
 app.use(authapi.routes());    //认证api路由
 
-app.use(function *(next) {
-  yield next;
-  if ( this.body || !this.idempotent ) return;
-  this.redirect( '/404.html' )
-});
+
 
 app.listen(3000);
 console.log('listening in 3000');

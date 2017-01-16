@@ -4,13 +4,15 @@
   "description": "document management based on Web",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "webpack && node app.js"
+    "test": "mocha ./test/*/*.test.js",
+    "start": "webpack && node app.js",
+    "dbinit": "node ./config/dbinit.js"
   },
   "author": "Jin",
   "license": "ISC",
   "dependencies": {
     "archiver": "^1.3.0",
+    "co": "^4.6.0",
     "co-body": "^4.2.0",
     "co-busboy": "^1.3.1",
     "co-views": "^2.1.0",

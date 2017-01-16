@@ -12,6 +12,17 @@ require('events').EventEmitter.prototype._maxListeners = 100; //设置最大为1
 
 
 module.exports = {
+  parser: function *(next) {
+    try{
+      yield next;
+    } catch (error) {
+      this.status = 500;
+      const err = {
+        message: error.message
+      }
+      handle.sendRes(this, err);
+    }
+  },
   //主页
   homeInfo: function *() {
     const u_id = this.req.user.u_id;
@@ -28,19 +39,13 @@ module.exports = {
   upload: function *() {
     const { fields, files } = yield handle.parseFiles(this);
 
-    if (files.files.length === 0) { //无文件上传
-      const err = {
-        message: '至少上传一个文件!'
-      }
-      return handle.sendRes(this, err);
-    }
+    if (!files.length) //无文件上传
+      throw Error('至少上传一个文件!');
+
     const exist = yield handle.pathIsExist(this, fields.path, this.req.user.u_id);
-    if (!exist) { //目录错误
-      const err = {
-        message: '上传目录错误或不存在!'
-      }
-      return handle.sendRes(this, err);
-    }
+    if (!exist)  //目录错误
+      throw Error('上传目录错误或不存在!')
+ 
 
     //更新数据库，响应体
     const res = yield handle.handleUpload(this, fields, files); 
@@ -52,19 +57,12 @@ module.exports = {
   uploadDir: function *() {
 
     const { fields, files } = yield handle.parseFiles(this);  //解析请求
-    if (files.files.length === 0) { //无文件上传
-      const err = {
-        message: '至少上传一个文件!'
-      }
-      return handle.sendRes(this, err);
-    }
+    if (!files.length) //无文件上传
+      throw Error('至少上传一个文件!');
+
     const exist = yield handle.pathIsExist(this, fields.path, this.req.user.u_id);
-    if (!exist) { //目录错误
-      const err = {
-        message: '上传目录错误或不存在!'
-      }
-      return handle.sendRes(this, err);
-    }
+    if (!exist)  //目录错误
+      throw Error('上传目录错误或不存在!')
 
     //生成文件树
     const body = handle.dirTree(fields, files, this.req.user.u_id)
@@ -93,10 +91,9 @@ module.exports = {
       this.set('Content-type', mime.lookup(name));
       this.body = fs.createReadStream(d_dir);
     } else if (!file.length) { //文件不存在
-      const err = {
-        message: '目标文件不存在!'
-      }
-      handle.sendRes(this, err);
+      
+        throw Error('目标文件不存在!');
+
     } else { //多文件或文件夹
       //文件信息
       files = yield handle.searchFiles(this, file);
@@ -120,12 +117,9 @@ module.exports = {
     body.u_id = this.req.user.u_id;
     body.lasttime = new Date(Date.now() + (8 * 60 * 60 * 1000));
     const res = yield handle.handleRename(this, body);
-    if(!res) { //返回为undefined，key错误或不存在
-      const err = {
-        message: '非法操作！'
-      }
-      return handle.sendRes(this, err);
-    }
+    if(!res)  //返回为undefined，key错误或不存在
+      throw Error('非法操作!');
+      
     handle.sendRes(this, res);
     
   },
@@ -136,20 +130,13 @@ module.exports = {
     body.lasttime = new Date(Date.now() + (8 * 60 * 60 * 1000));
 
     const exist = yield handle.pathIsExist(this, body.newPath, body.u_id);
-    if (!exist) { //目录错误
-      const err = {
-        message: '移动目录错误或不存在!'
-      }
-      return handle.sendRes(this, err);
-    }
+    if (!exist)  //目录错误
+      throw Error('移动目录错误或不存在!');
 
     let res = yield handle.handleMove(this, body); 
-    if(!res) { //返回为undefined，key错误或不存在
-      const err = {
-        message: '非法操作！'
-      }
-      return handle.sendRes(this, err);
-    }
+    if(!res)  //返回为undefined，key错误或不存在
+      throw Error('非法操作!');
+
     //更改文件夹内文件的路径
     for (let file of body.files) {
       file.u_id = this.req.user.u_id;
@@ -169,12 +156,9 @@ module.exports = {
     const { keys } = this.request.body;
     const u_id = this.req.user.u_id;
 
-    if(!Array.isArray(keys)) { //未指定keys，或keys类型错误
-      const err = {
-        message: '必须指定要删除的文件!'
-      }
-      return handle.sendRes(this, err);
-    }
+    if(!Array.isArray(keys))  //未指定keys，或keys类型错误
+      throw Error('必须指定要删除的文件!');
+
     for (let key of keys)
       yield handle.handleDelete(this, key, u_id);
 
@@ -187,12 +171,9 @@ module.exports = {
     body.time = new Date(Date.now() + (8 * 60 * 60 * 1000));
 
     const exist = yield handle.pathIsExist(this, body.path, body.u_id);
-    if (!exist) { //目录错误
-      const err = {
-        message: '目录错误或不存在!'
-      }
-      return handle.sendRes(this, err);
-    }
+    if (!exist)  //目录错误
+      throw Error('目录错误或不存在!');
+
     //新建文件夹
     const res = yield handle.handleMkdir(this, body);
     handle.sendRes(this, res);
@@ -204,12 +185,9 @@ module.exports = {
     body.u_id = this.req.user.u_id;
     //拿到所有文件
     let files = yield handle.getAllFiles(this, body);
-    if (!files.length) {
-      const err = {
-        message: '目标文件不存在!'
-      }
-      return handle.sendRes(this, err);
-    }
+    if (!files.length)
+      throw Error('目标文件不存在!');
+      
     //获取记录
     let rows = yield handle.searchFiles(this, files); 
     //移除前缀

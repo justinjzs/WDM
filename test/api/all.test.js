@@ -1,5 +1,5 @@
-const app = require('../../../app');
-
+const app = require('../../app');
+const path = require('path');
 const request = require('supertest').agent(app.listen());
 const expect = require('chai').expect;
 
@@ -54,26 +54,7 @@ describe('登录', () => {
       .expect(200, done)
   })
 })
-//test 无文件
-describe('GET /homeinfo', () => {
-  it('响应格式为json', done => {
-    request
-      .get('/homeinfo')
-      .expect('Content-Type', /json/)
-      .expect(200, done);
-  });
-  it('无文件，返回空数组', done => {
-    request
-      .get('/homeinfo')
-      .expect(200)
-      .end((err, res) => {
-        if(err) return done(err);
-        expect(res.body).to.be.an('array');
-        expect(res.body.length).to.equal(0);
-        done();
-      })
-  });
-})
+
 //上传文件
 describe('POST /upload', () => {
 
@@ -81,8 +62,8 @@ describe('POST /upload', () => {
     request
       .post('/upload')
       .field('path', '/')
-      .attach('files', './files/cat.jpg')
-      .attach('files', './files/tree.jpg')
+      .attach('files', path.join(__dirname, './files/cat.jpg'))
+      .attach('files', path.join(__dirname, './files/tree.jpg'))
       .expect(200)
       .expect('Content-Type', /json/)
       .end((err, res) => {
@@ -110,7 +91,7 @@ describe('POST /upload', () => {
     request
       .post('/upload')
       .field('path', '/')
-      .expect(200)
+      .expect(500)
       .end((err, res) => {
         if(err) return done(err);
         expect(res.body).to.be.an('object');
@@ -124,8 +105,8 @@ describe('POST /upload', () => {
     request
       .post('/upload')
       .field('path', '/123/321/')
-      .attach('files', './files/cat.jpg')
-      .expect(200)
+      .attach('files', path.join(__dirname, './files/cat.jpg'))
+      .expect(500)
       .end((err, res) => {
         if(err) return done(err);
         expect(res.body).to.be.an('object');
@@ -162,7 +143,7 @@ describe('POST /mkdir', () => {
     request
       .post('/mkdir')
       .send({path: '/123/321', name: 'doc'})
-      .expect(200)
+      .expect(500)
       .expect('Content-Type', /json/)
       .end((err, res) => {
         if(err) return done(err);
@@ -197,11 +178,11 @@ describe('PUT /rename', () => {
     request
       .post('/rename?_method=PUT')
       .send({ name: 'pic.jpg', key: -1 })
-      .expect(200)
+      .expect(500)
       .end((err, res) => {
         if(err) return done(err);
         expect(res.body).to.be.an('object');
-        expect(res.body.message).to.equal('非法操作！');
+        expect(res.body.message).to.equal('非法操作!');
         done();
       })
   });
@@ -223,7 +204,7 @@ describe('PUT /move', () => {
     request
       .post('/move?_method=PUT')
       .send(req)
-      .expect(200)
+      .expect(500)
       .expect('Content-Type', /json/)
       .end((err, res) => {
         if(err) return done(err);
@@ -340,7 +321,7 @@ describe('GET /download', () => {
   it('下载不存在的文件', done  => {
     request
       .get(`/download?key=10086`)
-      .expect(200)
+      .expect(500)
       .expect('Content-Type', /json/)
       .end((err, res) => {
         if(err) return done(err);
@@ -398,7 +379,7 @@ describe('POST /share', () => {
     request
       .post('/share')
       .send(req)
-      .expect(200)
+      .expect(500)
       .expect('Content-Type', /json/)
       .end((err, res) => {
         if(err) return done(err);
@@ -499,7 +480,7 @@ describe('DELETE /delete', () => {
     request
       .post('/delete?_method=DELETE')
       .send(req)
-      .expect(200)
+      .expect(500)
       .expect('Content-Type', /json/)
       .end((err, res) => {
         if (err) return done(err);
