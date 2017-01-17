@@ -2,9 +2,9 @@
 //set the postgres database account below
 
 const account = {
-  user: 'your username',
-  password: 'your password',
-  database: 'your database'
+  user: 'postgres',
+  password: 'jzstxdy173',
+  database: 'postgres'
 }
 
 module.exports = account;

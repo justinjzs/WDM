@@ -104,7 +104,7 @@ const dbInit = function *() {
 }
 
 co(dbInit).then(() => console.log("Database init successfully!"))
-          .catch(err => console.log(err));
+          .catch(err => {console.log(err); client.end()});
 
 
 

@@ -485,16 +485,30 @@ module.exports = function handle() {
 
   /** handle req to gain the home page info 
   * @param {Object} ctx 
-  * @param {Object} body
-  * @param {number} body.u_id
+  * @param {number} u_id
   * @returns {Promise}
-  */  
+  */
   const handleHomeInfo = (ctx, u_id) => new Promise((resolve, reject) => {
     ctx.dbquery(`select key, name, path, isdir, createtime, lasttime, d_size from u_d left join documents on u_d.d_hash = documents.d_hash where u_id = $1 ;`,
       [u_id],
       (err, result) => {
         if (err) reject(err);
         resolve(result.rows);
+      });
+  });
+  /** handle req to gain entry info specified by key 
+  * @param {Object} ctx 
+  * @param {number} key
+  * @param {number} u_id
+  * @returns {Promise}
+  */
+  const handleEntryInfo = (ctx, key, u_id) => new Promise((resolve, reject) => {
+    const values = [u_id, key];
+    ctx.dbquery(`select key, name, path, isdir, createtime, lasttime, d_size from u_d left join documents on u_d.d_hash = documents.d_hash where u_id = $1 and key  = $2;`,
+      values,
+      (err, result) => {
+        if (err) reject(err);
+        resolve(result.rows[0]);
       });
   });
 
@@ -619,7 +633,9 @@ const getShare = (ctx, body) => new Promise((resolve, reject) => {
     });
  });
 
+
 return {
+  handleEntryInfo,
   handleSaveShare,
   handleHomeInfo,
   handleShareInfo,

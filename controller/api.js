@@ -25,9 +25,18 @@ module.exports = {
   },
   //主页
   homeInfo: function *() {
+    const { key } = this.query;
     const u_id = this.req.user.u_id;
-    const rows = yield handle.handleHomeInfo(this, u_id);
-    handle.sendRes(this, rows);
+    let res;
+    if (key) {
+      res = yield handle.handleEntryInfo(this, key, u_id);
+      if(!res)
+        throw Error('key不存在!');
+    } else {
+      res = yield handle.handleHomeInfo(this, u_id);
+    }
+    handle.sendRes(this, res);
+
   },
   //分享页
   shareInfo: function *() {

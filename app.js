@@ -1,4 +1,6 @@
 const koa = require('koa');
+const mount = require('koa-mount');
+const graphqlHTTP = require('koa-graphql');
 const path = require('path');
 const logger = require('koa-logger');
 const serve = require('koa-static');
@@ -13,6 +15,7 @@ const db = require('./controller/db').middleware;
 const bodyParser = require('koa-bodyparser');
 const session = require('koa-generic-session');
 const passport = require('koa-passport');
+const schema = require('./graphql/schema');
 
 const app = module.exports = koa();
 
@@ -49,6 +52,10 @@ app.use(function*(next) { //拦截未认证的操作
     this.redirect('/login');
   }
 })
+app.use(mount('/graphql', graphqlHTTP({
+  schema,
+  graphiql: true 
+})));
 
 app.use(authPage.routes());   //认证页面路由
 app.use(authapi.routes());    //认证api路由
