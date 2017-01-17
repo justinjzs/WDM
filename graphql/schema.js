@@ -9,11 +9,22 @@ const {
  } = require('graphql')
 
 
+const init = cookie => ({
+  method: 'GET',
+  headers: {
+    'Content-Type': "application/json",
+    'Cookie': cookie
+  }
+})
 
+let cookie;
 
 const BASE_URL = 'http://localhost:3000';
 
-const fetchByUrl = relativeurl => fetch(`${BASE_URL}${relativeurl}`).then(res => res.json());
+const fetchByUrl = relativeurl => 
+  fetch(`${BASE_URL}${relativeurl}`, init(cookie))
+    .then(res => res.json());
+
 const fetchAll = () => fetchByUrl('/homeinfo');
 
 
@@ -24,7 +35,10 @@ const QueryType = new GraphQLObjectType({
     all: {
       type: new GraphQLList( EntryType ),
       description: 'all files info',
-      resolve: root => fetchall
+      resolve: (root, args, ctx) => {
+        cookie = ctx.req.headers.cookie;
+        return fetchAll();
+      }
     },
     entry: {
       type: EntryType,
@@ -32,7 +46,10 @@ const QueryType = new GraphQLObjectType({
       args: {
         key: { type: GraphQLInt }
       },
-      resolve: (root, args) => fetchByUrl(`/homeinfo?key=${args.key}`)
+      resolve: (root, args, ctx) => {
+        cookie = ctx.req.headers.cookie;
+        return fetchByUrl(`/homeinfo?key=${args.key}`)
+      }
     }
   })
 }) 
@@ -47,12 +64,13 @@ const EntryType = new GraphQLObjectType({
     },
     name: {
       type: GraphQLString,
-      description: 'the name of the entry',
+      description: 'the name of the entry'
     },
     path:{
       type: GraphQLString,
       description: 'the path of the entry',
-    }
+    },
+
   })
 })
 

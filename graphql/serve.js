@@ -2,12 +2,7 @@ const koa = require('koa');
 const mount = require('koa-mount'); // koa-mount@1.x
 const graphqlHTTP = require('koa-graphql');
 const { buildSchema } = require('graphql');
-
-const schema = buildSchema(`
-  type Query {
-    hello: String
-  }
-`);
+const schema = require('./schema');
 
 const root = { 
   hello: (a, b, c) => {
