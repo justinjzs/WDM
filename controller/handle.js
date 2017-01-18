@@ -434,7 +434,7 @@ module.exports = function handle() {
       children: []
     };
 
-    const time = new Date(Date.now() + (8 * 60 * 60 * 1000));    //统一上传时间
+    const time = new Date();    //统一上传时间
 
     //产生dirtree
     for (let file of files) {
@@ -496,13 +496,13 @@ module.exports = function handle() {
         resolve(result.rows);
       });
   });
-  /** handle req to gain entry info specified by key 
+  /** handle req to gain entity info specified by key 
   * @param {Object} ctx 
   * @param {number} key
   * @param {number} u_id
   * @returns {Promise}
   */
-  const handleEntryInfo = (ctx, key, u_id) => new Promise((resolve, reject) => {
+  const handleEntityInfo = (ctx, key, u_id) => new Promise((resolve, reject) => {
     const values = [u_id, key];
     ctx.dbquery(`select key, name, path, isdir, createtime, lasttime, d_size from u_d left join documents on u_d.d_hash = documents.d_hash where u_id = $1 and key  = $2;`,
       values,
@@ -554,7 +554,7 @@ module.exports = function handle() {
  */
   function* handleUpload(ctx, fields, files) {
     let res = [];
-    const time = new Date(Date.now() + (8 * 60 * 60 * 1000));    //统一上传时间。
+    const time = new Date();    //统一上传时间。
     for (let file of files) { //处理每个文件
       const body = {
         d_hash: file.hash,
@@ -597,12 +597,12 @@ module.exports = function handle() {
     else {
       filePath = filePath.match(/\d+/g);
       const key = filePath.pop();
-      filePath = '/' + filePath.length ? (filePath.join('/') + '/') : '';
+      filePath = '/' + (filePath.length ? (filePath.join('/') + '/') : '');
       values = [key, true, u_id];
       ctx.dbquery(`select path from u_d where key = $1 and isdir = $2 and u_id = $3;`,
         values,
         (err, result) => {
-          if (err) reject(err);
+          if (err) reject(false);
 
           if (result.rows.length === 0) //key不存在或不是文件夹
             resolve(false);
@@ -635,7 +635,7 @@ const getShare = (ctx, body) => new Promise((resolve, reject) => {
 
 
 return {
-  handleEntryInfo,
+  handleEntityInfo,
   handleSaveShare,
   handleHomeInfo,
   handleShareInfo,

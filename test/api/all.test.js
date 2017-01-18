@@ -9,7 +9,7 @@ let renameFile, renameDir;
 let delFile, delDir;
 let moveFile, moveDir, distDir;
 let downFile, downDir;
-let shareAddr;
+let shareAddr, secretShareAddr;
 
 describe('登录前请求受限的API', () => {
   it('GET /homeinfo', done => {
@@ -368,6 +368,8 @@ describe('POST /share', () => {
         expect(res.body).to.be.an('object');
         expect(res.body.addr).to.be.a('string');
         expect(res.body.secret.length).to.equal(6);
+
+        secretShareAddr = res.body.addr;
         done();
       })
   });
@@ -445,6 +447,19 @@ describe('DELETE /unshare', () => {
     request
       .post(`/unshare?_method=DELETE`)
       .send({ addr: shareAddr })
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .end((err, res) => {
+        if (err) return done(err);
+        expect(res.body).to.be.an('object');
+        expect(res.body.done).to.equal(true);
+        done()
+      })
+  })
+  it('取消私密分享', done => {
+    request
+      .post(`/unshare?_method=DELETE`)
+      .send({ addr: secretShareAddr })
       .expect(200)
       .expect('Content-Type', /json/)
       .end((err, res) => {

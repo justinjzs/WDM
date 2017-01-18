@@ -26,14 +26,13 @@ const dbquery = pool => function(text, values, cb) {
   })
 }
 
-
 module.exports = {
   middleware: function* (next) { //middleware
     const pool = new pg.Pool(config);
     this.dbquery = dbquery(pool);
     yield next;
   },
-  query: () => (dbquery(new pg.Pool(config))) //function
+  query: () => dbquery(new pg.Pool(config)) //function
 }
 
 

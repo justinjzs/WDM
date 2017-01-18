@@ -49,8 +49,8 @@ const createU_D = () => new Promise((resolve, reject) => {
     isdir   boolean not null,
     path    varchar(100) not null,
     name    varchar(50) not null,
-    createtime date not null,
-    lasttime date not null
+    createtime timestamp not null,
+    lasttime timestamp not null
   );`,
     (err, result) => {
       if (err) return reject(err);

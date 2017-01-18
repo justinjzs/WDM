@@ -29,7 +29,7 @@ module.exports = {
     const u_id = this.req.user.u_id;
     let res;
     if (key) {
-      res = yield handle.handleEntryInfo(this, key, u_id);
+      res = yield handle.handleEntityInfo(this, key, u_id);
       if(!res)
         throw Error('key不存在!');
     } else {
@@ -124,7 +124,7 @@ module.exports = {
   rename: function *() {
     const body = this.request.body;
     body.u_id = this.req.user.u_id;
-    body.lasttime = new Date(Date.now() + (8 * 60 * 60 * 1000));
+    body.lasttime = new Date();
     const res = yield handle.handleRename(this, body);
     if(!res)  //返回为undefined，key错误或不存在
       throw Error('非法操作!');
@@ -136,7 +136,7 @@ module.exports = {
   move: function *() {
     const body = this.request.body;
     body.u_id = this.req.user.u_id;
-    body.lasttime = new Date(Date.now() + (8 * 60 * 60 * 1000));
+    body.lasttime = new Date();
 
     const exist = yield handle.pathIsExist(this, body.newPath, body.u_id);
     if (!exist)  //目录错误
@@ -177,7 +177,7 @@ module.exports = {
   mkdir: function *() {
     const body = this.request.body;
     body.u_id = this.req.user.u_id;  
-    body.time = new Date(Date.now() + (8 * 60 * 60 * 1000));
+    body.time = new Date();
 
     const exist = yield handle.pathIsExist(this, body.path, body.u_id);
     if (!exist)  //目录错误
@@ -248,7 +248,7 @@ module.exports = {
   //转存
   saveShare: function *() {
     const body = this.request.body; 
-    const time = new Date(Date.now() + (8 * 60 * 60 * 1000));
+    const time = new Date();
     //获取文件信息
     const rows = yield handle.getShare(this, body);
     handle.rmPrefix(rows); //隐含排序
