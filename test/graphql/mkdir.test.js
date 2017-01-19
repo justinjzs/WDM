@@ -28,7 +28,10 @@ describe('新建文件夹测试', () => {
         key,
         name,
         path,
-        isdir
+        isdir,
+        inside {
+          key
+        }
       }
     }`
     request
@@ -46,7 +49,8 @@ describe('新建文件夹测试', () => {
               key: doc,
               name: 'doc',
               path: '/',
-              isdir: true
+              isdir: true,
+              inside: []
             }
           }
         })

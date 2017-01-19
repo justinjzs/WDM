@@ -1,4 +1,3 @@
-const fetch = require('node-fetch');
 const query = require('./query');
 const { 
   GraphQLSchema,
@@ -16,7 +15,8 @@ const MutationType = new GraphQLObjectType({
   name: 'Mutation',
   description: 'mutate what you want',
   fields: () => ({
-    mkdir: {
+    //新建文件夹
+    mkdir: { 
       type: folderType,
       description: 'create a new folder in specified dir',
       args: {
@@ -24,10 +24,56 @@ const MutationType = new GraphQLObjectType({
         path: { type: GraphQLString }
       },
       resolve: (root, { name, path = '/' }, ctx) => (
-        query.pathIsExist(ctx.req.user, path)
-          .then(() =>
-            query.mkdir(ctx.req.user, name, path)
+        query.pathIsExist(ctx.req.user, path) //判断路径是否有效
+          .then(() => query.mkdir(ctx.req.user, name, path) //新建文件夹
           )
+      )
+    },
+    //重命名文件(夹)
+    rename: {
+      type: entityInterface,
+      description: 'rename an entity',
+      args: {
+        key: { type: new GraphQLNonNull(GraphQLInt) },
+        name: { type: new GraphQLNonNull(GraphQLString) }
+      },
+      resolve: (root, { key, name }, ctx) =>
+        query.rename(ctx.req.user, key, name) //重命名
+          .then(() => query.entityByKey(ctx.req.user, key) //获取最新的数据
+          )
+    },
+    //删除文件(夹)
+    delete: {
+      type: entityInterface,
+      description: 'delete an entity',
+      args: {
+        key: { type: new GraphQLNonNull(GraphQLInt) }
+      },
+      resolve: (root, { key }, ctx) => {
+        let res;
+        return query.entityByKey(ctx.req.user, key) //先获取数据
+          .then(result => {
+            res = result;
+            return query.delEntity(ctx.req.user, key) //再删除
+          })
+          .then(() => res) //删除成功则返回先前获取的数据
+      }
+    },
+    //移动文件(夹)
+    move: {
+      type: entityInterface,
+      description: 'move an entity',
+      args: {
+        key: { type: new GraphQLNonNull(GraphQLInt) },
+        prePath: { type: new GraphQLNonNull(GraphQLString) },
+        newPath: { type: new GraphQLNonNull(GraphQLString) }
+      },
+      resolve: (root, { key, prePath, newPath }, ctx) => (
+        query.pathIsExist(ctx.req.user, newPath) //目标路径是否存在
+          .then(() => query.move(ctx.req.user, key, prePath, newPath)) //移动文件(夹)本身
+          .then(isdir => //如果是文件夹就移动其内部所有文件
+            isdir && query.moveDir(ctx.req.user, key, prePath, newPath))
+          .then(() => query.entityByKey(ctx.req.user, key)) //获取最新的数据
       )
     }
   })
@@ -45,8 +91,7 @@ const QueryType = new GraphQLObjectType({
       },
       resolve: (root, { path = '/' }, ctx) => (
         query.pathIsExist(ctx.req.user, path)
-          .then(() =>
-            query.entityByPath(ctx.req.user, path)
+          .then(() => query.entityByPath(ctx.req.user, path)
           )
       )     
     },
@@ -208,30 +253,30 @@ module.exports = schema;
  *  key: Number!,
  *  path: String!,
  *  name: String!,
+ *  isdir: Boolean!,
  *  createTime: String!
  *  lastTime: String!
  * }
  * 
- * type File : entity {
+ * type file : entity {
  *  key: Number!,
  *  path: String!,
  *  name: String!,
+ *  isdir: Boolean!,
  *  d-size: Number!,
  *  createTime: String!
  *  lastTime: String!
  * }
  * 
- * type Folder : entity {
+ * type folder : entity {
  *  key: Number!,
  *  path: String!,
  *  name: String!,
+ *  isdir: Boolean!,
  *  createTime: String!
- *  contain: [Number],
+ *  inside: [entity],
  *  lastTime: String!
  * }
  * 
- * type Query {
- *  entity(key: Number): entity
- * }
  */
 
