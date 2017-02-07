@@ -2,6 +2,10 @@ const koa = require('koa');
 const mount = require('koa-mount');
 const graphqlHTTP = require('koa-graphql');
 const path = require('path');
+const webpack = require('webpack');
+const webpackDevMiddleware = require('koa-webpack-dev-middleware');
+const webpackHotMiddleware = require('koa-webpack-hot-middleware');
+const config = require('./webpack.config');
 const logger = require('koa-logger');
 const serve = require('koa-static');
 const methodOverride = require('koa-methodoverride');
@@ -18,6 +22,17 @@ const passport = require('koa-passport');
 const schema = require('./graphql/schema');
 
 const app = module.exports = koa();
+
+const compiler = webpack(config);
+app.use(webpackDevMiddleware(compiler, {
+  noInfo: false,
+  publicPath: config.output.publicPath
+}));
+app.use(webpackHotMiddleware(compiler, {
+    log: false,
+    path: "/__what",
+    heartbeat: 2000
+}));
 
 app.use(logger());  //日志
 app.use(favicon(path.join(__dirname, './public/favicon.ico'))); //favicon

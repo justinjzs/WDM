@@ -50,6 +50,8 @@
     "co-fs": "^1.2.0",
     "css-loader": "^0.26.1",
     "koa-favicon": "^1.2.1",
+    "koa-webpack-dev-middleware": "^1.4.4",
+    "koa-webpack-hot-middleware": "^1.0.3",
     "marked": "^0.3.6",
     "node-sass": "^4.1.1",
     "react": "^15.4.1",
