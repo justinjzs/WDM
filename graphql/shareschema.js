@@ -62,10 +62,10 @@ const entityInterface = new GraphQLInterfaceType({
       type: GraphQLString,
       description: 'the name of the entity'
     },
-    // addr: {
-    //   type: GraphQLString,
-    //   description: 'the addr of the entity'
-    // },
+    addr: {
+      type: GraphQLString,
+      description: 'the addr of the entity'
+    },
     path: {
       type: GraphQLString,
       description: 'the path of the entity',
@@ -96,6 +96,10 @@ const fileType = new GraphQLObjectType({
       type: GraphQLString,
       description: 'the name of the file'
     },
+    addr: {
+      type: GraphQLString,
+      description: 'the addr of the entity'
+    },
     path: {
       type: GraphQLString,
       description: 'the path of the file'
@@ -125,6 +129,10 @@ const folderType = new GraphQLObjectType({
       type: GraphQLString,
       description: 'the name of the folder'
     },
+    addr: {
+      type: GraphQLString,
+      description: 'the addr of the entity'
+    },
     path: {
       type: GraphQLString,
       description: 'the path of the folder'
@@ -136,7 +144,7 @@ const folderType = new GraphQLObjectType({
     inside: {
       type: new GraphQLList(entityInterface),
       description: 'the entities in the folder',
-      resolve: ({key, path}) => query.insideFolder(key, path)
+      resolve: ({key, path, addr}) => query.insideFolder(key, path, addr)
     }
   }),
   interfaces: [ entityInterface ]

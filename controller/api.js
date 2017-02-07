@@ -232,6 +232,9 @@ module.exports = {
     const query = this.query;
     //查询文件信息
     const files = yield handle.handleDownshare(this, query);
+    //请求的分享页地址错误或不存在
+    if (!files.length)
+      throw Error('分享文件不存在!');
     //创建临时目录
     const tmp = fs.mkdtempSync(path.join(__dirname, '../public/download/'));
     //移除前缀
@@ -270,13 +273,4 @@ module.exports = {
   }
  }
 
-const chain = (files) => {
-  const map = {};
-  for (let file of files)
-    map[file.key] = file;
-  for (let file of files) {
-    let filePath = file.path.match(/\d+/g);
-    file.path = filePath.map(key => map[key]);
-  }
-}
 

@@ -67,6 +67,7 @@ const createShare = () => new Promise((resolve, reject) => {
     U_id    int not null,
     key     bigint not null,
     D_hash  varchar(80) ,
+    D_size  bigint,
     D_dir   varchar(100),
     isdir   boolean not null,
     path    varchar(100) not null,

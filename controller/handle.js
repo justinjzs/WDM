@@ -87,7 +87,7 @@ module.exports = function handle() {
     });
 
     form.parse(ctx.req, (err, fields, files) => {
-      if (err) reject(err);
+      if (err) return reject(err);
       files = files.files; //files 为前端<input>的name属性
 
       if (!files) //上传文件为空
@@ -135,7 +135,7 @@ module.exports = function handle() {
     ctx.dbquery(`insert into u_d (u_id, d_hash, path, name, createtime, lasttime, isdir) values ($1, $2, $3, $4, $5, $6, $7) returning key, d_hash, name, path, isdir, createtime, lasttime;`,
       values,
       (err, result) => {
-        if (err) reject(err);
+        if (err) return reject(err);
         resolve(result.rows[0]);
       });
   })
@@ -151,7 +151,7 @@ module.exports = function handle() {
     ctx.dbquery(`update u_d set name = $1, lasttime = $2 where key = $3 and u_id = $4 returning key, name;`,
       values,
       (err, result) => {
-        if (err) reject(err);
+        if (err) return reject(err);
         resolve(result.rows[0]);
       });
   })
@@ -168,7 +168,7 @@ module.exports = function handle() {
     ctx.dbquery(`update u_d set lasttime = $1, path = $2 where key in (${keys.toString()}) and u_id = $3 returning key, path, lasttime;`,
       values,
       (err, result) => {
-        if (err) reject(err);
+        if (err) return reject(err);
         resolve(result.rows);
       });
   })
@@ -185,7 +185,7 @@ module.exports = function handle() {
     ctx.dbquery(`update u_d set path = replace(path, $1, $2) where u_id = $3 and path like $4 returning key, path, lasttime;`,
       values,
       (err, result) => {
-        if (err) reject(err);
+        if (err) return reject(err);
         resolve(result.rows);
       });
   })
@@ -204,7 +204,7 @@ module.exports = function handle() {
     ctx.dbquery(`select key, isdir, u_id from u_d where (key in (${keys.toString()}) or path similar to '${pathReg}' ) and  u_id = $1;`,
       values,
       (err, result) => {
-        if (err) reject(err);
+        if (err) return reject(err);
         resolve(result.rows);
       });
   });
@@ -222,7 +222,7 @@ module.exports = function handle() {
     ctx.dbquery(`select d_dir, name from documents inner join u_d on documents.d_hash = u_d.d_hash where u_d.key = $1 and  u_d.u_id = $2;`,
       values,
       (err, result) => {
-        if (err) reject(err);
+        if (err) return reject(err);
         resolve(result.rows[0]);
       });
   });
@@ -241,7 +241,7 @@ module.exports = function handle() {
     ctx.dbquery(`delete from u_d where (key = $1 or path like $2) and u_id = $3 `,
       values,
       (err, result) => {
-        if (err) reject(err);
+        if (err) return reject(err);
         resolve({done: true});
       });
   });
@@ -257,7 +257,7 @@ module.exports = function handle() {
     ctx.dbquery(`insert into u_d (u_id, path, name, createtime, lasttime, isdir) values ($1, $2, $3, $4, $5, $6) returning key, name, path, isdir,createtime, lasttime;`,
       values,
       (err, result) => {
-        if (err) reject(err);
+        if (err) return reject(err);
         resolve(result.rows[0]);
       });
   });
@@ -273,10 +273,10 @@ module.exports = function handle() {
     let keys = body.map(file => file.key);
     const u_id = body[0].u_id;
     keys = '(' + keys.join(',') + ')';
-    ctx.dbquery(`select key, u_d.d_hash, d_dir, isdir, path, name from u_d left join documents on documents.d_hash = u_d.d_hash where u_d.key in ${keys} and u_d.u_id = $1 ;`,
+    ctx.dbquery(`select key, u_d.d_hash, d_dir, d_size, isdir, path, name from u_d left join documents on documents.d_hash = u_d.d_hash where u_d.key in ${keys} and u_d.u_id = $1 ;`,
       [u_id],
       (err, result) => {
-        if (err) reject(err);
+        if (err) return reject(err);
         resolve(result.rows);
       });
   });
@@ -326,14 +326,14 @@ module.exports = function handle() {
     let { u_id, addr, secret, rows } = body;
     secret = secret && `'${secret}'`;
     let values = rows.map(row => (
-      `('${addr}', ${secret}, ${u_id}, ${row.key}, '${row.d_hash}', '${row.d_dir}', ${row.isdir}, '${row.path}', '${row.name}')`
+      `('${addr}', ${secret}, ${u_id}, ${row.key}, '${row.d_hash}', ${row.d_size}, '${row.d_dir}', ${row.isdir}, '${row.path}', '${row.name}')`
     ));
     values = values.join(',');
-    ctx.dbquery(`insert into share (addr, secret, u_id, key, d_hash, d_dir, isdir, path, name) values ${values} returning addr, secret;`,
+    ctx.dbquery(`insert into share (addr, secret, u_id, key, d_hash, d_size, d_dir, isdir, path, name) values ${values} returning addr, secret;`,
       undefined,
       (err, result) => {
-        if (err) reject(err);
-        resolve(result.rows[0]);
+        if (err) return reject(err);
+        return resolve(result.rows[0]);
       });
   });
 
@@ -350,7 +350,7 @@ module.exports = function handle() {
     ctx.dbquery(`delete from share where addr = $1 and u_id = $2 ;`,
       values,
       (err, result) => {
-        if (err) reject(err);
+        if (err) return reject(err);
         resolve({ done: true });
       });
   });
@@ -414,7 +414,7 @@ module.exports = function handle() {
     ctx.dbquery(`select key, name, path, isdir, d_dir from share where addr = $1 ;`,
       values,
       (err, result) => {
-        if (err) reject(err);
+        if (err) return reject(err);
         resolve(result.rows);
       });
   });
@@ -492,7 +492,7 @@ module.exports = function handle() {
     ctx.dbquery(`select key, name, path, isdir, createtime, lasttime, d_size from u_d left join documents on u_d.d_hash = documents.d_hash where u_id = $1 ;`,
       [u_id],
       (err, result) => {
-        if (err) reject(err);
+        if (err) return reject(err);
         resolve(result.rows);
       });
   });
@@ -507,7 +507,7 @@ module.exports = function handle() {
     ctx.dbquery(`select key, name, path, isdir, createtime, lasttime, d_size from u_d left join documents on u_d.d_hash = documents.d_hash where u_id = $1 and key  = $2;`,
       values,
       (err, result) => {
-        if (err) reject(err);
+        if (err) return reject(err);
         resolve(result.rows[0]);
       });
   });
@@ -524,7 +524,7 @@ module.exports = function handle() {
     ctx.dbquery(`select key, name, path, isdir, d_hash from share where addr = $1 ;`,
       values,
       (err, result) => {
-        if (err) reject(err);
+        if (err) return reject(err);
         resolve(result.rows);
       });
   });
@@ -542,7 +542,7 @@ module.exports = function handle() {
     ctx.dbquery(`insert into u_d (name, path, isdir, d_hash, u_id, createtime, lasttime) values ($1, $2, $3, $4, $5, $6, $7) returning key ;`,
       values,
       (err, result) => {
-        if (err) reject(err);
+        if (err) return reject(err);
         resolve(result.rows[0].key);
       });
   });
@@ -628,7 +628,7 @@ const getShare = (ctx, body) => new Promise((resolve, reject) => {
   ctx.dbquery(`select key, d_hash, path, name, isdir from share where (key in (${keys.toString()}) or path similar to '${pathReg}' ) and  addr = $1;`,
     [addr],
     (err, result) => {
-      if (err) reject(err);
+      if (err) return reject(err);
       resolve(result.rows);
     });
  });

@@ -9,7 +9,10 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-react
+        <Header />
+        <Functionbar />
+        <Sidebar />
+        <Workspace />
       </div>
     );
   }
