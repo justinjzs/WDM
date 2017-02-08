@@ -1,24 +1,20 @@
-import React, { Component } from 'react';
+import React, { Component, PropTypes } from 'react';
 import Row from './Row';
+import Displaybar from './Displaybar';
+import { connect } from 'react-redux'
+import { fetchCurrentFiles } from '../actions'
 
-const data = [
-  {
-    key: 647,
-    name: 'doc',
-    size: null,
-    isdir: true,
-    lasttime: 'Tue Feb 07 2017 11:34:18',
-    createtime: 'Tue Feb 07 2017 11:34:18'
-
+class Workspace extends Component {
+  componentWillMount() {
+    this.props.loadFilesHandler();
   }
-]
-
-export default class Workspace extends Component {
   render() {
-    const files = data;
+
+    const { currentFiles, loadFilesHandler } = this.props;
 
     return (
-      <div className="table-responsive" id="workspace">
+      <div className="table-responsive workspace">
+        <Displaybar />
         <table className="table table-striped table-bordered table-hover" >
           <thead>
             <tr>
@@ -32,10 +28,10 @@ export default class Workspace extends Component {
             </tr>
           </thead>
           <tbody>
-            {files.map(file => {
+            {currentFiles.map(file => {
               file.iconClass = 'fa fa-folder fa-2x';
               return (
-                <Row key={file.key} {...file} />
+                <Row key={file.key} {...file} onClick={loadFilesHandler} />
               )
             })}
           </tbody>
@@ -44,3 +40,21 @@ export default class Workspace extends Component {
     );
   }
 }
+
+Workspace.propTypes = {
+  currentFiles: PropTypes.array.isRequired,
+  loadFilesHandler: PropTypes.func.isRequired 
+};
+
+const mapStateToProps = state => ({
+  currentFiles: state.currentFiles
+})
+
+const mapDispatchToProps = dispatch => ({
+  loadFilesHandler: key => dispatch(fetchCurrentFiles(key))
+})
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(Workspace);

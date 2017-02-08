@@ -12,18 +12,10 @@ class App extends Component {
         <Header />
         <Functionbar />
         <Sidebar />
-        <Workspace />
+        {this.props.children}
       </div>
     );
   }
 }
 
-const Home = () => (
-  <div className="App">
-    <Header />
-    <Functionbar />
-    <Sidebar />
-    <Workspace />
-  </div>
-)
 export default App;
