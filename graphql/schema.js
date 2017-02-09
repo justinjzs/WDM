@@ -83,6 +83,13 @@ const QueryType = new GraphQLObjectType({
   name: 'Query',
   description: 'query the wdm info',
   fields: () => ({
+    allFolders: {
+      type: new GraphQLList( folderType ),
+      description: 'query all folders in wdm',
+      resolve: (root, args, ctx) => (
+        query.getAllFolders(ctx.req.user)
+      )
+    },
     entityByPath: {
       type: new GraphQLList( entityInterface ),
       description: 'query entities in specified path',

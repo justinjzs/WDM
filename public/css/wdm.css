@@ -4,14 +4,29 @@
   border-width: 2px 0px 0px 0px;;
   border-color: #3698b3;
 }
+.logo{
+  height: 35px;
+  width: 130px;
+  margin-top: 17px;
+  margin-bottom: 17px;
+}
+#description {
+  position: relative;
+  top: 12px;
+  left: 5px;
+}
 
 #search {
-  width: 300px;
+  width: 293px;
+  height: 40px;
+  border-color: #c7c7c7;
+  padding: 0px ;
+
 }
 
 #new {
   width: 75px;
-  height: 28px;
+  line-height: inherit;
   margin: 16px 15px 16px 6px;
   background-color: #80b950;
 }

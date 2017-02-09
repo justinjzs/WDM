@@ -202,6 +202,20 @@ const pathIsExist = ({ u_id }, path) => new Promise((resolve, reject) => {
 
 })
 
+/**
+ * @param {String|Number} u_id
+ * @returns {Promise} 
+ */
+const getAllFolders = ({ u_id }) => new Promise((resolve, reject) => {
+  const values = [u_id, true];
+  query(`select key, name, path, isdir, createtime, lasttime from u_d
+    where u_id = $1 and isdir = $2`,
+    values,
+    (err, result) => {
+      if (err) return reject(err);
+      resolve(result.rows)
+    })
+})
 
 module.exports = {
   entityByKey,
@@ -213,7 +227,8 @@ module.exports = {
   move,
   moveDir,
   delEntity,
-  pathIsExist
+  pathIsExist,
+  getAllFolders
 }
 
 

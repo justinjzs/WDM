@@ -1,7 +1,13 @@
-import React, { Component } from 'react';
+import React, { Component, PropTypes } from 'react';
+import { connect } from 'react-redux'
+import merge from 'deepmerge'
+import { fetchAllFolders } from '../actions'
 
 
-export default class Header extends Component {
+class Sidebar extends Component {
+  componentWillMount() {
+    this.props.loadTreeHandler();
+  }
   render() {
     return (
       <div className="nav-side-menu">
@@ -29,4 +35,23 @@ export default class Header extends Component {
       </div>
     );
   }
-}
+};
+
+Sidebar.propTypes = {
+  tree: PropTypes.object.isRequired,
+  loadTreeHandler: PropTypes.func.isRequired
+
+};
+
+const mapStateToProps = state => ({
+  tree: merge({}, state.tree, {clone: true})
+});
+
+const mapDispatchToProps = dispatch => ({
+  loadTreeHandler: () => dispatch(fetchAllFolders())
+});
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(Sidebar)

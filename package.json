@@ -50,6 +50,7 @@
     "chai": "^3.5.0",
     "co-fs": "^1.2.0",
     "css-loader": "^0.26.1",
+    "deepmerge": "^1.3.2",
     "koa-favicon": "^1.2.1",
     "koa-webpack-dev-middleware": "^1.4.4",
     "koa-webpack-hot-middleware": "^1.0.3",

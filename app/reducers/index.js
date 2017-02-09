@@ -1,6 +1,8 @@
 import { combineReducers } from 'redux';
-import currentFilesReducer from './currentfiles';
+import workspaceReducer from './workspace';
+import treeReducer from './tree'
 
 export default combineReducers({
-  currentFiles: currentFilesReducer
+  workspace: workspaceReducer,
+  tree: treeReducer
 })

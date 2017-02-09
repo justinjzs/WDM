@@ -2,20 +2,19 @@ import React from 'react';
 import { Link } from 'react-router';
 
 const Row = ({
-  isChecked,
-  iconClass,
-  key,
+  icon,
   name,
+  path,
   size,
   lastTime,
   createTime,
-  onClick
+  clickHandler
 }) => (
   <tr>
     <td >
-      <input type='checkbox' value={isChecked} />
+      <input type='checkbox' />
     </td>
-    <td > <i className={iconClass} /> <a href="javascript:void(0)" onClick={console.log(key) } >{' ' + name}</a> </td>
+    <td > <img src={`/css/svg/${icon}`} /> <a href="javascript:void(0)" onClick={() => clickHandler(path)} >{' ' + name}</a> </td>
     <td > {size || '-'} </td>
     <td > {lastTime.slice(0, 24)} </td>
     <td> {createTime.slice(0, 24)} </td>
