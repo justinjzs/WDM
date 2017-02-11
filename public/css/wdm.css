@@ -4,9 +4,12 @@
   border-width: 2px 0px 0px 0px;;
   border-color: #3698b3;
 }
+.container-fluid {
+  height: 68px;
+}
 .logo{
-  height: 35px;
-  width: 130px;
+  height: 30px;
+  width: 112px;
   margin-top: 17px;
   margin-bottom: 17px;
 }
@@ -14,26 +17,49 @@
   position: relative;
   top: 12px;
   left: 5px;
+  font-size: small;
 }
 
-#search {
-  width: 293px;
+.input-group {
+  width: 388px;
   height: 40px;
+  margin: 14px 0px 14px 40px;;
   border-color: #c7c7c7;
   padding: 0px ;
 
 }
 
+#filter {
+  height: 40px;
+  background-color: #fbfbfb;
+  border-color: #c7c7c7;
+}
+
+#search {
+  height: 40px;
+  border-right: 0px;
+  border-color: #c7c7c7;
+  border-color: #c7c7c7;
+}
+
+#submit {
+  height: 40px;
+  border-left: 0px;
+  background-color: white;
+  border-color: #c7c7c7;
+}
+
 #new {
   width: 75px;
+  height: 28px;
   line-height: inherit;
-  margin: 16px 15px 16px 6px;
+  margin: 16px 15px 16px 9px;
   background-color: #80b950;
 }
 #upload {
   width: 112px;
   height: 28px;
-  margin: 16px 6px 16px 0px;
+  margin: 16px 9px 16px 0px;
 }
 .functionbar {
   width: 220px;
@@ -67,18 +93,35 @@
   bottom: 0px;
   top: 70px;
 }
+thead {
+  border: 1px solid #c7c7c7;
+}
 
 th {
   font-family: verdana;
-  font-size: 20px;
+  height: 45px;
+  font-size: 18px;
   font-weight: 300;
-  background-color: #eef0ee;
+  background-color: #f3f3f3;
 }
-
-td{
+tr {
+  height: 45px; 
+}
+.table>tbody>tr>td {
+  height: 45px;
+  padding: 7px;
   font-family: verdana;
   font-size: 15px;
   font-weight: 250;
+}
+
+.checkbox {
+  width: 16px;
+  height: 16px;
+}
+.icon {
+  width: 30px;
+  height: 30px;
 }
 .navbar {
   margin-bottom: 0px;
@@ -90,7 +133,7 @@ td{
   font-family: verdana;
   font-size: 12px;
   font-weight: 200;
-  background-color: #2e353d;
+  background-color: #3b4547;
   position: absolute;
   width: 220px;
   height: 100%;

@@ -14,7 +14,7 @@ const Row = ({
     <td >
       <input type='checkbox' />
     </td>
-    <td > <img src={`/css/svg/${icon}`} /> <a href="javascript:void(0)" onClick={() => clickHandler(path)} >{' ' + name}</a> </td>
+    <td > <img src={`/css/svg/${icon}`} className="icon"/> <a href="javascript:void(0)" onClick={() => clickHandler(path)} >{name}</a> </td>
     <td > {size || '-'} </td>
     <td > {lastTime.slice(0, 24)} </td>
     <td> {createTime.slice(0, 24)} </td>

@@ -58,13 +58,13 @@ class Workspace extends Component {
     return (
       <div className="table-responsive workspace">
         <Displaybar currentPath={currentPath} map={map} clickHandler={loadFilesHandler} />
-        <table className="table table-striped table-bordered table-hover" >
+        <table className="table table-hover" >
           <thead>
             <tr>
-              <th >
-                <input type='checkbox' />
+              <th width="50px">
+                <input type='checkbox' className="checkbox" />
               </th>
-              <th >Name</th>
+              <th width="40%">Name</th>
               <th >Size</th>
               <th >LastModified</th>
               <th>CreateTime</th>

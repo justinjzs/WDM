@@ -25,6 +25,7 @@ class Sidebar extends Component {
               <li><a href="#">General</a></li>
               <li><a href="#">Buttons</a></li>
             </ul>
+            
             <li>
               <a href="#">
                 <i className="fa fa-share-alt fa-lg"></i> Share
