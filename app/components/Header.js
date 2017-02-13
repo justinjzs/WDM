@@ -19,7 +19,7 @@ export default class Header extends Component {
                     <li><a href="#its_equal">All Files</a></li>
                   </ul>
               </div>
-              <input type="text" className="form-control"id="search" placeholder="Search term..." />
+              <input type="text" className="form-control"id="search" placeholder="Search..." />
               <span className="input-group-btn">
                 <button className="btn btn-default" type="button" id="submit" ><img src="/css/svg/search.svg" /></button>
               </span>

@@ -2,13 +2,18 @@ import React, { Component, PropTypes } from 'react';
 import Row from './Row';
 import Displaybar from './Displaybar';
 import { connect } from 'react-redux'
-import { fetchCurrentFiles } from '../actions'
+import { fetchCurrentFiles, selectFile, selectAll } from '../actions'
 import merge from 'deepmerge'
 
 class Workspace extends Component {
   componentWillMount() {
     this.props.loadFilesHandler();
   }
+
+  checkAllHandler(e) {
+    this.props.selectAll(e.target.checked);
+  }
+
   getIconName(file) {
     if (file.isdir)
       return 'folder_24pix.svg';
@@ -53,7 +58,7 @@ class Workspace extends Component {
 }
   render() {
 
-    const { currentFiles, currentPath, map, loadFilesHandler } = this.props;
+    const { currentFiles, currentPath, map, loadFilesHandler, selectFile } = this.props;
 
     return (
       <div className="table-responsive workspace">
@@ -62,7 +67,7 @@ class Workspace extends Component {
           <thead>
             <tr>
               <th width="50px">
-                <input type='checkbox' className="checkbox" />
+                <input type='checkbox' className="checkbox" onChange={e => this.checkAllHandler(e)}/>
               </th>
               <th width="40%">Name</th>
               <th >Size</th>
@@ -73,7 +78,7 @@ class Workspace extends Component {
           <tbody>
             {currentFiles.map(file => {
               return (
-                <Row key={file.key} {...file} size={this.formatBytes(file.size, 0)} icon={this.getIconName(file)} path={file.path + file.key + '/'} clickHandler={loadFilesHandler} />
+                <Row key={file.key} {...file} fileKey={file.key} size={this.formatBytes(file.size, 0)} checkHandler={selectFile} icon={this.getIconName(file)} path={file.path + file.key + '/'} clickHandler={loadFilesHandler} />
               )
             })}
           </tbody>
@@ -87,8 +92,9 @@ class Workspace extends Component {
 Workspace.propTypes = {
   currentFiles: PropTypes.array.isRequired,
   currentPath: PropTypes.string.isRequired,
+  map: PropTypes.object.isRequired,
   loadFilesHandler: PropTypes.func.isRequired,
-  map: PropTypes.object.isRequired
+  selectFile: PropTypes.func.isRequired
 };
 
 const mapStateToProps = state => ({
@@ -98,7 +104,9 @@ const mapStateToProps = state => ({
 })
 
 const mapDispatchToProps = dispatch => ({
-  loadFilesHandler: path => dispatch(fetchCurrentFiles(path))
+  loadFilesHandler: path => dispatch(fetchCurrentFiles(path)),
+  selectFile: key => dispatch(selectFile(key)),
+  selectAll: checked => dispatch(selectAll(checked))
 })
 
 export default connect(

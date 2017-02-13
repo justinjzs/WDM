@@ -3,16 +3,19 @@ import { Link } from 'react-router';
 
 const Row = ({
   icon,
+  selected,
+  fileKey,
   name,
   path,
   size,
   lastTime,
   createTime,
-  clickHandler
+  clickHandler,
+  checkHandler
 }) => (
   <tr>
     <td >
-      <input type='checkbox' />
+      <input type='checkbox' checked={selected} onChange={e => checkHandler(fileKey)}/>
     </td>
     <td > <img src={`/css/svg/${icon}`} className="icon"/> <a href="javascript:void(0)" onClick={() => clickHandler(path)} >{name}</a> </td>
     <td > {size || '-'} </td>
