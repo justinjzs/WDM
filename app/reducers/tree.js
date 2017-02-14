@@ -8,7 +8,7 @@ const initialState = {
 
 const createTree = files => {
   let folders = merge({}, files);
-  folders.sort((a, b) => a.path.match(/\//g).length > b.path.match(/\//g).length);
+  folders = folders.sort((a, b) => a.path.match(/\//g).length - b.path.match(/\//g).length);
   let map = {};
   let home = {
     children: {}

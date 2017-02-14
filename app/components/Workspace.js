@@ -2,7 +2,7 @@ import React, { Component, PropTypes } from 'react';
 import Row from './Row';
 import Displaybar from './Displaybar';
 import { connect } from 'react-redux'
-import { fetchCurrentFiles, selectFile, selectAll } from '../actions'
+import { fetchCurrentFiles, selectFile, selectAll, ajaxDelete, download } from '../actions'
 import merge from 'deepmerge'
 
 class Workspace extends Component {
@@ -17,7 +17,7 @@ class Workspace extends Component {
   getIconName(file) {
     if (file.isdir)
       return 'folder_24pix.svg';
-    let extname = file.name.match(/\.(doc|docx|pdf|xls|gif|jpg|jpeg|png|mp4|avi|rmvb|wmv|mov|flv|webm)$/i);
+    let extname = file.name.match(/\.(doc|docx|pdf|xls|gif|jpg|svg|jpeg|png|mp4|avi|rmvb|wmv|mov|flv|webm|zip|rar|7z)$/i);
     if (extname)
       extname = extname[0];
     switch (extname) {
@@ -29,6 +29,7 @@ class Workspace extends Component {
       case '.xls':
         return 'xls.svg'
       case '.gif':
+      case '.svg':
       case '.jpg':
       case '.jpeg':
       case '.png':
@@ -41,8 +42,12 @@ class Workspace extends Component {
       case '.flv':
       case 'webm':
         return 'video.svg';
+      case 'zip':
+      case 'rar':
+      case '7z':
+        return 'zip.svg'
       default:
-        return 'default';
+        return 'other.svg';
     }
   }
 
@@ -58,16 +63,23 @@ class Workspace extends Component {
 }
   render() {
 
-    const { currentFiles, currentPath, map, loadFilesHandler, selectFile } = this.props;
+    const { currentFiles, 
+            currentPath, 
+            map, 
+            loadFilesHandler, 
+            selectFile } = this.props;
 
     return (
       <div className="table-responsive workspace">
-        <Displaybar currentPath={currentPath} map={map} clickHandler={loadFilesHandler} />
+        <Displaybar {...this.props} />
         <table className="table table-hover" >
           <thead>
             <tr>
-              <th width="50px">
-                <input type='checkbox' className="checkbox" onChange={e => this.checkAllHandler(e)}/>
+              <th className="center-cell" width="50px">
+              <div className="checkbox">
+                <input type='checkbox' className="styled" onChange={e => this.checkAllHandler(e)}/>
+                <label></label>
+              </div>                
               </th>
               <th width="40%">Name</th>
               <th >Size</th>
@@ -94,7 +106,10 @@ Workspace.propTypes = {
   currentPath: PropTypes.string.isRequired,
   map: PropTypes.object.isRequired,
   loadFilesHandler: PropTypes.func.isRequired,
-  selectFile: PropTypes.func.isRequired
+  selectFile: PropTypes.func.isRequired,
+  selectAll: PropTypes.func.isRequired,
+  deleteFiles: PropTypes.func.isRequired,
+  download: PropTypes.func.isRequired
 };
 
 const mapStateToProps = state => ({
@@ -106,7 +121,9 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = dispatch => ({
   loadFilesHandler: path => dispatch(fetchCurrentFiles(path)),
   selectFile: key => dispatch(selectFile(key)),
-  selectAll: checked => dispatch(selectAll(checked))
+  selectAll: checked => dispatch(selectAll(checked)),
+  deleteFiles: currentFiles => dispatch(ajaxDelete(currentFiles)),
+  download: currentFiles => dispatch(download(currentFiles))
 })
 
 export default connect(

@@ -1,6 +1,7 @@
 import merge from 'deepmerge'
 
-import { 
+import {
+  WORKSPACE_DELETE,
   WORKSPACE_SELECT,
   WORKSPACE_SELECT_ALL,
   WORKSPACE_REQUEST_SUCCESS,
@@ -36,6 +37,16 @@ export default function currentFilesReducer(state = initialState, action) {
         currentFiles: action.files,
         currentPath: state.currentPath
       };
+    case WORKSPACE_DELETE:
+      let newFiles = [];
+      for(let file of state.currentFiles) {
+        if (action.keys.indexOf(file.key) === -1)
+          newFiles.push(file);
+      }
+      return {
+        currentFiles: newFiles,
+        currentPath: state.currentPath
+      }
     default:
       return state;
   }
