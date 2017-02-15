@@ -7,7 +7,7 @@ export default class Collapse extends Component {
     for (let folder in folders) {
       array.push(folders[folder])
     }
-    let offset = (level)*10 + 10 + 'px';
+    let offset = level ? (level)*10 + 10 + 'px' : '10px';
     return (
       <div>
         {array.map(folder => {
@@ -19,7 +19,7 @@ export default class Collapse extends Component {
                   <img style={{ padding: `0px 10px 0px ${offset}` }} src={`/css/svg/folder_${color}_16pix.svg`} className="folder-icon" /><a href="#">{folder.name}<span className="arrow"></span></a>
                 </li>
                 <ul id={folder.key} className="collapse">
-                  <Collapse level={++level} folders={folder.children} dClickHandler={dClickHandler} currentFolder={currentFolder} />
+                  <Collapse level={level && level + 1} folders={folder.children} dClickHandler={dClickHandler} currentFolder={currentFolder} />
                 </ul>
               </div>) :
               <li onDoubleClick={e => dClickHandler(folder.path + folder.key + '/')} key={folder.key}><img style={{ padding: `0px 10px 0px ${offset}` }} src={`/css/svg/folder_${color}_16pix.svg`} className="folder-icon" /><a href="#">{folder.name}</a></li>

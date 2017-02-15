@@ -14,10 +14,12 @@ module.exports = function handle() {
    */
   const sendFile = (ctx, fileInfo) => {
     const {filePath, fileName} = fileInfo;
-    ctx.set('Content-disposition', 'attachment; filename=' + fileName);
-    ctx.set('Content-type', mime.lookup(filePath));
+    ctx.set('Content-Disposition', 'attachment; filename=' + fileName);
+    ctx.set('Content-Type', mime.lookup(filePath));
     ctx.body = fs.createReadStream(filePath);
-    ctx.body.on('close', () => fs.unlinkSync(filePath));
+    ctx.body.on('close', () => 
+      fs.unlinkSync(filePath)
+    );
 
   }
   /**send response in json 
@@ -50,7 +52,10 @@ module.exports = function handle() {
 
     archive.directory(tmp, '/');
     archive.finalize();
-    output.on('close', () => { delDir(tmp); resolve({ filePath, fileName }); });
+    output.on('close', () => { 
+      delDir(tmp); 
+      resolve({ filePath, fileName }); 
+    });
   });
 
   /**delete specified directory

@@ -2,7 +2,9 @@ import React, { Component, PropTypes } from 'react';
 import Row from './Row';
 import Displaybar from './Displaybar';
 import { connect } from 'react-redux'
-import { fetchCurrentFiles, selectFile, selectAll, ajaxDelete, download } from '../actions'
+import { fetchCurrentFiles, 
+         selectFile, 
+         selectAll } from '../actions'
 import merge from 'deepmerge'
 
 class Workspace extends Component {
@@ -90,7 +92,13 @@ class Workspace extends Component {
           <tbody>
             {currentFiles.map(file => {
               return (
-                <Row key={file.key} {...file} fileKey={file.key} size={this.formatBytes(file.size, 0)} checkHandler={selectFile} icon={this.getIconName(file)} path={file.path + file.key + '/'} clickHandler={loadFilesHandler} />
+                <Row key={file.key} {...file} 
+                    fileKey={file.key} 
+                    size={this.formatBytes(file.size, 0)} 
+                    checkHandler={selectFile} 
+                    icon={this.getIconName(file)} 
+                    path={file.path + file.key + '/'} 
+                    clickHandler={loadFilesHandler} />
               )
             })}
           </tbody>
@@ -107,9 +115,7 @@ Workspace.propTypes = {
   map: PropTypes.object.isRequired,
   loadFilesHandler: PropTypes.func.isRequired,
   selectFile: PropTypes.func.isRequired,
-  selectAll: PropTypes.func.isRequired,
-  deleteFiles: PropTypes.func.isRequired,
-  download: PropTypes.func.isRequired
+  selectAll: PropTypes.func.isRequired
 };
 
 const mapStateToProps = state => ({
@@ -121,9 +127,7 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = dispatch => ({
   loadFilesHandler: path => dispatch(fetchCurrentFiles(path)),
   selectFile: key => dispatch(selectFile(key)),
-  selectAll: checked => dispatch(selectAll(checked)),
-  deleteFiles: currentFiles => dispatch(ajaxDelete(currentFiles)),
-  download: currentFiles => dispatch(download(currentFiles))
+  selectAll: checked => dispatch(selectAll(checked))
 })
 
 export default connect(

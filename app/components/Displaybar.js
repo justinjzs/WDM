@@ -3,25 +3,23 @@ import Breadcrumb from './Breadcrumb'
 import Toolbar from './Toolbar'
 
 export default class Displaybar extends Component {
-  constructor(props) {
-    super(props);
-    this.deleteHandler = this.deleteHandler.bind(this);
-    this.downloadHandler = this.downloadHandler.bind(this);
-  }
-  downloadHandler() {
-    const{ currentFiles, download } = this.props;
-    download(currentFiles);
-  }
-  deleteHandler() {
-    const{ currentFiles, deleteFiles } = this.props;
-    deleteFiles(currentFiles);
-  }
+
   render() {
-    const {currentPath, map, loadFilesHandler} = this.props;
+    const {currentFiles, currentPath, map, loadFilesHandler} = this.props;
+    let count = 0;
+    let renameFile;
+    for(let file of currentFiles) {
+      if(count > 1)
+        break;
+      if (file.selected){
+        count++;
+        renameFile = file;
+      }
+    }
     return (
       <div className="displaybar">
       <Breadcrumb currentPath={currentPath} map={map} clickHandler={loadFilesHandler} />
-      <Toolbar deleteHandler={this.deleteHandler} downloadHandler={this.downloadHandler} />
+      {!!count && <Toolbar show={count > 1} renameFile={renameFile} />}
       </div>
     );
   }

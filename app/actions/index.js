@@ -4,6 +4,13 @@ export const WORKSPACE_DELETE = 'WORKSPACE_DELETE'
 export const WORKSPACE_SELECT_ALL = 'WORKSPACE_SELECT_ALL'
 export const WORKSPACE_REQUEST = 'WORKSPACE_REQUEST'
 export const TREE_REQUEST_SUCCESS = 'TREE_REQUEST_SUCCESS'
+export const SEARCH_RESULT = 'SEARCH_RESULT'
+//searchreducer
+export const getSearchResult = result => ({
+  type: SEARCH_RESULT,
+  result
+})
+
 //workspaceReducer
 export const getCurrentPath = path => ({
   type: WORKSPACE_REQUEST,
@@ -210,7 +217,69 @@ export const ajaxDelete = files => dispatch => {
   return xhr.send(JSON.stringify({ keys })); 
 }
 
-export const download = files => dispatch => {
+//rename
+export const fetchRename = (key, name, currentPath) => dispatch => {
+  const query = `
+    mutation rename {
+      rename(key: ${key}, name: "${name}") {
+        key,
+        name,
+        path,
+        isdir,
+        createTime,
+        lastTime
+      }
+    }`
+  const init = {
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    method: 'POST',
+    credentials: 'include',
+    body: JSON.stringify({ query })
+  }
+
+  return fetch('/graphql', init)
+    .then(res => res.json())
+    .then(json => dispatch(fetchCurrentFiles(currentPath)))
+    .catch(e => console.log(e.message));  
+}
+//move to
+export const fetchMove = (keys, prePath, newPath) => dispatch => {
+  let moves = keys.map(key => `
+    move${key}: move(key: ${key}, prePath: "${prePath}", newPath: "${newPath}") {
+        key,
+        name,
+        path,
+        isdir,
+        createTime,
+        lastTime
+      }
+  `)
+  const query = `
+    mutation move {
+      ${moves.join(' ')}
+    }`
+  const init = {
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    method: 'POST',
+    credentials: 'include',
+    body: JSON.stringify({ query })
+  }
+
+  return fetch('/graphql', init)
+    .then(res => res.json())
+    .then(json => dispatch(fetchCurrentFiles(prePath)))
+    .catch(e => console.log(e.message));
+}
+
+
+//download
+export const ajaxDownload = files => dispatch => {
   let keys = [];
   for (let file of files) {
     if (file.selected) 
@@ -220,11 +289,12 @@ export const download = files => dispatch => {
   const query = keys.join('&');
   const xhr = new XMLHttpRequest();
   xhr.open('GET', `/download?${query}`);
+  xhr.responseType = "arraybuffer";
   xhr.onload = e => {
     if (xhr.status == 200) {
       const name = xhr.getResponseHeader('Content-disposition').split('=').pop();
       const type = xhr.getResponseHeader('Content-type');
-      let blob = new Blob([xhr.response], {type});
+      let blob = new Blob([xhr.response]);
       saveBlob(blob, name);
     }
   }
@@ -243,3 +313,34 @@ const saveBlob = (function () {
     window.URL.revokeObjectURL(url);
   };
 } ());
+
+//search 
+export const fetchSearch = (name, path) => dispatch => {
+  const query = `{
+      entityByName(name: "${name}", path: "${path}") {
+        key,
+        name,
+        path,
+        isdir,
+        createTime,
+        lastTime,
+        ...on file {
+          size
+        }
+      }
+    }`
+  const init = {
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    method: 'POST',
+    credentials: 'include',
+    body: JSON.stringify({ query })
+  }
+
+  return fetch('/graphql', init)
+    .then(res => res.json())
+    .then(json => dispatch(getSearchResult(json.data.entityByName)))
+    .catch(e => console.log(e.message));   
+}

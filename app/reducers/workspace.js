@@ -14,7 +14,7 @@ const initialState = {
   currentPath: '/'
 }
 
-export default function currentFilesReducer(state = initialState, action) {
+export default function workspaceReducer(state = initialState, action) {
   switch (action.type) {
     case WORKSPACE_SELECT:
       let newState = merge({}, state, {clone: true});

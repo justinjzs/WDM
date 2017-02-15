@@ -70,7 +70,8 @@ const MutationType = new GraphQLObjectType({
       },
       resolve: (root, { key, prePath, newPath }, ctx) => (
         query.pathIsExist(ctx.req.user, newPath) //目标路径是否存在
-          .then(() => query.move(ctx.req.user, key, prePath, newPath)) //移动文件(夹)本身
+          .then(() => //移动文件(夹)本身
+            query.move(ctx.req.user, key, prePath, newPath)) 
           .then(isdir => //如果是文件夹就移动其内部所有文件
             isdir && query.moveDir(ctx.req.user, key, prePath, newPath))
           .then(() => query.entityByKey(ctx.req.user, key)) //获取最新的数据
