@@ -20,6 +20,7 @@ const bodyParser = require('koa-bodyparser');
 const session = require('koa-generic-session');
 const passport = require('koa-passport');
 const schema = require('./graphql/schema');
+const shareSchema = require('./graphql/shareschema');
 
 const app = module.exports = koa();
 
@@ -55,6 +56,11 @@ app.use(function *(next) {
   if ( this.body || !this.idempotent ) return;
   this.redirect( '/404.html' )
 });
+
+app.use(mount('/graphqlshare', graphqlHTTP({
+  schema: shareSchema,
+  graphiql: true 
+})));
 
 app.use(function*(next) { //拦截未认证的操作
   if (this.isAuthenticated()) {
