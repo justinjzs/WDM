@@ -188,7 +188,7 @@ module.exports = {
     handle.sendRes(this, res);
   },
   //分享
-  share: function *() {
+  addShare: function *() {
     //拿到key
     const body = this.request.body;
     body.u_id = this.req.user.u_id;

@@ -124,9 +124,43 @@ const QueryType = new GraphQLObjectType({
             query.entityByName(ctx.req.user, name, path)
           )
       )
+    },
+    shareRecords: {
+      type: new GraphQLList(shareRecordType),
+      description: 'get all share records',
+      resolve: (root, args, ctx) => (
+        query.getAllShareRecords(ctx.req.user)
+      )
     }
   })
 }) 
+
+const shareRecordType = new GraphQLObjectType({
+  name: 'share',
+  description: 'a share record info',
+  fields: () => ({
+    addr: {
+      type: GraphQLString,
+      description: 'the address of share page corresponds to this record'
+    },
+    secret: {
+      type: GraphQLString,
+      description: 'the secret of corresponding share page'
+    },
+    key: {
+      type: GraphQLInt,
+      description: 'the key of the file that represents the record'
+    },
+    name: {
+      type: GraphQLString,
+      description: 'the name of the file that represents the record'
+    },
+    isdir: {
+      type: GraphQLBoolean,
+      description: 'indicate the type of the file that represents the record'
+    }
+  })
+})
 //实体接口模型
 const entityInterface = new GraphQLInterfaceType({
   name: 'entity',

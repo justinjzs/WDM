@@ -216,6 +216,20 @@ const getAllFolders = ({ u_id }) => new Promise((resolve, reject) => {
       resolve(result.rows)
     })
 })
+/**
+ * @param {String|Number} u_id
+ * @returns {Promise} 
+ */
+const getAllShareRecords = ({ u_id }) => new Promise((resolve, reject) => {
+  const values = [u_id];
+  query(`select distinct on(addr) key, name, addr, secret, isdir from share
+    where u_id = $1`,
+    values,
+    (err, result) => {
+      if (err) return reject(err);
+      resolve(result.rows)
+    })
+})
 
 module.exports = {
   entityByKey,
@@ -228,7 +242,8 @@ module.exports = {
   moveDir,
   delEntity,
   pathIsExist,
-  getAllFolders
+  getAllFolders,
+  getAllShareRecords
 }
 
 

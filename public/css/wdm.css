@@ -53,6 +53,7 @@
   border-color: #c7c7c7;
 }
 #new-div,
+#addshare-div,
 #move-div,
 #rename-div {
   display: inline;
@@ -62,6 +63,16 @@
   left: 40%;
   top: 40%
 
+}
+#addshare .modal-body>div {
+  line-height: 50px;
+}
+#addshare .modal-body>div button {
+  margin: 0px 12px;
+}
+#addshare .modal-body>div span {
+  font-size: 15px;
+  font-family: Verdana;
 }
 #new {
   font-family: Verdana;
@@ -130,12 +141,10 @@ input[type=file] {
   padding: 18px 10px;
 }
 
-
-
 .navbar-brand {
   width: 250px;
   font-family: verdana;
-  font-size: 40px;
+  font-size: 28px;
   font-weight: 300;
 }
 .displaybar {
@@ -143,6 +152,14 @@ input[type=file] {
   background-color: #fbfbfb;
 
 }
+.displaybar>span {
+  margin-left: 20px;
+  line-height: 60px;
+  font-family: sans-serif;
+  font-size: 28px;
+  font-weight: normal
+}
+.sharespace,
 .workspace {
   overflow: auto;
   position: absolute;
@@ -154,6 +171,9 @@ input[type=file] {
 
 thead {
   border: 1px solid #c7c7c7;
+}
+.fa-sort {
+  margin: 0px 5px;
 }
 .table>thead>tr>th {
   border-bottom: 1px solid #c7c7c7;

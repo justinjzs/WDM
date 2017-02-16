@@ -55,7 +55,7 @@ describe('获取分享页信息', () => {
       isSecret: false
     }
     request
-      .post('/share')
+      .post('/addshare')
       .send(req)
       .expect(200)
       .expect('Content-Type', /json/)

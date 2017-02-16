@@ -5,7 +5,7 @@ import Toolbar from './Toolbar'
 export default class Displaybar extends Component {
 
   render() {
-    const {currentFiles, currentPath, map, loadFilesHandler} = this.props;
+    const {currentFiles, currentPath, map, loadFilesHandler, isSearch} = this.props;
     let count = 0;
     let renameFile;
     for(let file of currentFiles) {
@@ -18,7 +18,9 @@ export default class Displaybar extends Component {
     }
     return (
       <div className="displaybar">
-      <Breadcrumb currentPath={currentPath} map={map} clickHandler={loadFilesHandler} />
+      {isSearch ? 
+        <span>Search Result</span> : 
+        <Breadcrumb currentPath={currentPath} map={map} clickHandler={loadFilesHandler} />}
       {!!count && <Toolbar show={count > 1} renameFile={renameFile} />}
       </div>
     );

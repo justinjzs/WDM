@@ -7,7 +7,7 @@ route.use('*', api.parser) //handle error message
      .post('/upload', api.upload)  //上传文件 t X
      .post('/uploaddir', api.uploadDir)  //上传文件夹 X
      .post('/mkdir', api.mkdir) //新建文件夹 t Graphql
-     .post('/share', api.share) // 加入分享 t
+     .post('/addshare', api.addShare) // 加入分享 t
      .post('/saveshare', api.saveShare)//转存 t
      .put('/rename', api.rename)  //重命名 t Graphql
      .put('/move', api.move) //移动 t Graphql

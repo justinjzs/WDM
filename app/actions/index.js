@@ -5,13 +5,51 @@ export const WORKSPACE_SELECT_ALL = 'WORKSPACE_SELECT_ALL'
 export const WORKSPACE_REQUEST = 'WORKSPACE_REQUEST'
 export const TREE_REQUEST_SUCCESS = 'TREE_REQUEST_SUCCESS'
 export const SEARCH_RESULT = 'SEARCH_RESULT'
-//searchreducer
+export const ADDSHARE = 'ADDSHARE'
+export const ADDSHARE_RESET = 'ADDSHARE_RESET'
+export const SHARE_RECORDS = 'SHARE_RECORDS'
+export const WORKSPACE_SORTBYNAME = 'WORKSPACE_SORTBYNAME'
+export const WORKSPACE_SORTBYSIZE = 'WORKSPACE_SORTBYSIZE'
+export const WORKSPACE_SORTBYLASTTIME = 'WORKSPACE_SORTBYLASTTIME'
+export const WORKSPACE_SORTBYCREATETIME = 'WORKSPACE_SORTBYCREATETIME'
+//shareReducer
+export const getShareRecords = records => ({
+  type: SHARE_RECORDS,
+  records
+})
+
+export const resetAddShare = () => ({
+  type: ADDSHARE_RESET
+})
+
+export const addShare = (link, secret) => ({
+  type: ADDSHARE,
+  link,
+  secret
+})
+
+//workspaceReducer
+export const sortByCreateTime = (order) => ({
+  type: WORKSPACE_SORTBYCREATETIME,
+  order
+})
+export const sortByLastTime = (order) => ({
+  type: WORKSPACE_SORTBYLASTTIME,
+  order
+})
+export const sortBySize = (order) => ({
+  type: WORKSPACE_SORTBYSIZE,
+  order
+})
+export const sortByName = (order) => ({
+  type: WORKSPACE_SORTBYNAME,
+  order
+})
 export const getSearchResult = result => ({
   type: SEARCH_RESULT,
   result
 })
 
-//workspaceReducer
 export const getCurrentPath = path => ({
   type: WORKSPACE_REQUEST,
   path
@@ -65,10 +103,32 @@ export const fetchCurrentFiles = (path = `/`) => dispatch => {
     body: JSON.stringify({ query })
   }
 
+  Date.prototype.Format = function (fmt) {
+    var o = {
+      "M+": this.getMonth() + 1, //月份 
+      "d+": this.getDate(), //日 
+      "h+": this.getHours(), //小时 
+      "m+": this.getMinutes(), //分 
+      "s+": this.getSeconds(), //秒 
+      "q+": Math.floor((this.getMonth() + 3) / 3), //季度 
+      "S": this.getMilliseconds() //毫秒 
+    };
+    if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+    for (var k in o)
+      if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+    return fmt;
+  }
+
   return fetch('/graphql', init)
     .then(res => res.json())
-    .then(json => json.data.entityByPath.map(f => { f.selected = false; return f; }))
-    .then(arr => dispatch(getCurrentFiles(arr)))
+    .then(json => json.data.entityByPath)
+    .then(array => array.map(f => { 
+      f.selected = false;
+      f.lastTime = new Date(f.lastTime).Format("yyyy-MM-dd hh:mm:ss");
+      f.createTime = new Date(f.createTime).Format("yyyy-MM-dd hh:mm:ss");
+      return f;
+     }))
+    .then(array => dispatch(getCurrentFiles(array)))
     .catch(e => console.log(e.message));
 }
 
@@ -201,7 +261,7 @@ export const fetchMkdir = (name, path) => dispatch => {
 export const ajaxDelete = files => dispatch => {
   let keys = [];
   for (let file of files) {
-    if (file.selected) 
+    if (file.selected)
       keys.push(file.key);
   }
   const xhr = new XMLHttpRequest();
@@ -214,7 +274,7 @@ export const ajaxDelete = files => dispatch => {
     }
   }
 
-  return xhr.send(JSON.stringify({ keys })); 
+  return xhr.send(JSON.stringify({ keys }));
 }
 
 //rename
@@ -243,7 +303,7 @@ export const fetchRename = (key, name, currentPath) => dispatch => {
   return fetch('/graphql', init)
     .then(res => res.json())
     .then(json => dispatch(fetchCurrentFiles(currentPath)))
-    .catch(e => console.log(e.message));  
+    .catch(e => console.log(e.message));
 }
 //move to
 export const fetchMove = (keys, prePath, newPath) => dispatch => {
@@ -282,7 +342,7 @@ export const fetchMove = (keys, prePath, newPath) => dispatch => {
 export const ajaxDownload = files => dispatch => {
   let keys = [];
   for (let file of files) {
-    if (file.selected) 
+    if (file.selected)
       keys.push(file.key);
   }
   keys = keys.map(key => `key=${key}`);
@@ -342,5 +402,49 @@ export const fetchSearch = (name, path) => dispatch => {
   return fetch('/graphql', init)
     .then(res => res.json())
     .then(json => dispatch(getSearchResult(json.data.entityByName)))
-    .catch(e => console.log(e.message));   
+    .catch(e => console.log(e.message));
+}
+
+export const fetchAddShare = (keys, isSecret) => dispatch => {
+  const req = {
+    keys,
+    isSecret
+  }
+  const init = {
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    method: 'POST',
+    credentials: 'include',
+    body: JSON.stringify(req)
+  }
+  return fetch('./addshare', init)
+    .then(res => res.json())
+    .then(json => dispatch(addShare(json.addr, json.secret)));
+}
+
+export const fetchShareRecords = () => dispatch => {
+  const query = `{
+    shareRecords {
+      key,
+      name,
+      isdir,
+      addr,
+      secret
+    }
+  }`
+  const init = {
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    method: 'POST',
+    credentials: 'include',
+    body: JSON.stringify({ query })
+  }
+
+  return fetch('/graphql', init)
+    .then(res => res.json())
+    .then(json => dispatch(getShareRecords(json.data.shareRecords)))
 }

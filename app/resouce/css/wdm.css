@@ -37,7 +37,12 @@
   bottom: 0px;
   top: 112px;
 }
-
+.displaybar>span {
+  line-height: 60px;
+  font-family: Verdana;
+  font-weight: 400;
+  font-size:  40px;
+}
 th {
   font-family: verdana;
   font-size: 20px;

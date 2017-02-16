@@ -332,14 +332,14 @@ describe('GET /download', () => {
   })
 })
 //分享
-describe('POST /share', () => {
+describe('POST /addshare', () => {
   it('公开链接', done => {
     const req = {
       keys: [delDir.key, renameFile.key],
       isSecret: false
     }
     request
-      .post('/share')
+      .post('/addshare')
       .send(req)
       .expect(200)
       .expect('Content-Type', /json/)
@@ -359,7 +359,7 @@ describe('POST /share', () => {
       isSecret: true
     }
     request
-      .post('/share')
+      .post('/addshare')
       .send(req)
       .expect(200)
       .expect('Content-Type', /json/)
@@ -379,7 +379,7 @@ describe('POST /share', () => {
       isSecret: true
     }
     request
-      .post('/share')
+      .post('/addshare')
       .send(req)
       .expect(500)
       .expect('Content-Type', /json/)

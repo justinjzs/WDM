@@ -400,9 +400,10 @@ module.exports = function handle() {
     for (let file of files) {
       //移动
       const dist = dir + file.path; //目标路径
-      if (file.isdir)
+      const isExist = fs.existsSync(dist);
+      if (file.isdir && !isExist)
         fs.mkdirSync(dist);
-      else
+      else if (!isExist)
         fs.createReadStream(file.d_dir).pipe(fs.createWriteStream(dist));
     }
   }

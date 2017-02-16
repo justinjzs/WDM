@@ -1,6 +1,5 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux'
-import { Link } from 'react-router'
 import { fetchSearch } from '../actions'
 
 class Header extends Component {
@@ -53,7 +52,7 @@ class Header extends Component {
               </div>
               <input type="text" className="form-control"id="search" value={inputText} onChange={this.inputHandler} placeholder="Search..." />
               <span className="input-group-btn">
-                <Link to={toUrl}><button className="btn btn-default" type="button" id="submit" onClick={() => this.searchHandler()} ><img src="/css/svg/search.svg" /></button></Link>
+                <button className="btn btn-default" type="button" id="submit" onClick={() => this.searchHandler()} ><img src="/css/svg/search.svg" /></button>
               </span>
             </div>
           <ul className="nav navbar-nav navbar-right">

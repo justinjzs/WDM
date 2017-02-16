@@ -1,10 +1,9 @@
 import { combineReducers } from 'redux';
 import workspaceReducer from './workspace';
 import treeReducer from './tree'
-import searchReducer from './search'
-
+import shareReducer from './share'
 export default combineReducers({
   workspace: workspaceReducer,
   tree: treeReducer,
-  searchResult: searchReducer
+  share: shareReducer
 })

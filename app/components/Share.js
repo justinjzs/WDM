@@ -1,10 +1,12 @@
-import React, { Component } from 'react';
+import React, { Component } from 'react'
 
-export default class Search extends Component {
+export default class Share extends Component {
   render() {
-    return (
-      <div className="workspace">
-        This is Share Component!
+    return(
+      <div className="sharespace">
+        <div className="displaybar">
+          <span> My Share</span>
+        </div>
       </div>
     )
   }

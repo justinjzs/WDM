@@ -25,8 +25,8 @@ const Row = ({
       <a href="javascript:void(0)" onClick={() => clickHandler(path)} ><span>{name}</span></a> : 
       <span>{name}</span>} </td>
     <td > {size || '-'} </td>
-    <td > {lastTime.slice(0, 24)} </td>
-    <td> {createTime.slice(0, 24)} </td>
+    <td > {lastTime} </td>
+    <td> {createTime} </td>
   </tr>
 )
 
