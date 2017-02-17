@@ -22,5 +22,9 @@ module.exports = {
 
   signup: function *() {
     this.body = yield render('signup');
+  },
+
+  share: function *() {
+    this.body = yield render('share');
   }
 }

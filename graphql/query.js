@@ -222,7 +222,7 @@ const getAllFolders = ({ u_id }) => new Promise((resolve, reject) => {
  */
 const getAllShareRecords = ({ u_id }) => new Promise((resolve, reject) => {
   const values = [u_id];
-  query(`select distinct on(addr) key, name, addr, secret, isdir from share
+  query(`select distinct on(addr) key, name, time, addr, secret, isdir from share
     where u_id = $1`,
     values,
     (err, result) => {

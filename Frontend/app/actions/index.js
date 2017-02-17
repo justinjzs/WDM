@@ -12,7 +12,28 @@ export const WORKSPACE_SORTBYNAME = 'WORKSPACE_SORTBYNAME'
 export const WORKSPACE_SORTBYSIZE = 'WORKSPACE_SORTBYSIZE'
 export const WORKSPACE_SORTBYLASTTIME = 'WORKSPACE_SORTBYLASTTIME'
 export const WORKSPACE_SORTBYCREATETIME = 'WORKSPACE_SORTBYCREATETIME'
+export const SHARE_RECORDS_SELECT = 'SHARE_RECORDS_SELECT'
+export const SHARE_RECORDS_SELECT_ALL = 'SHARE_RECORDS_SELECT_ALL'
+export const SHARE_RECORDS_SORTBYNAME = 'SHARE_RECORDS_SORTBYNAME'
+export const SHARE_RECORDS_SORTBYTIME = 'SHARE_RECORDS_SORTBYTIME'
+
 //shareReducer
+export const sortShareRecordsByName = order => ({
+  type: SHARE_RECORDS_SORTBYNAME,
+  order
+})
+export const sortShareRecordsByTime = order => ({
+  type: SHARE_RECORDS_SORTBYTIME,
+  order
+})
+export const selectAllShareRecords = () => ({
+  type:SHARE_RECORDS_SELECT_ALL
+})
+export const selectShareRecords = addr => ({
+  type: SHARE_RECORDS_SELECT,
+  addr
+})
+
 export const getShareRecords = records => ({
   type: SHARE_RECORDS,
   records
@@ -103,31 +124,14 @@ export const fetchCurrentFiles = (path = `/`) => dispatch => {
     body: JSON.stringify({ query })
   }
 
-  Date.prototype.Format = function (fmt) {
-    var o = {
-      "M+": this.getMonth() + 1, //月份 
-      "d+": this.getDate(), //日 
-      "h+": this.getHours(), //小时 
-      "m+": this.getMinutes(), //分 
-      "s+": this.getSeconds(), //秒 
-      "q+": Math.floor((this.getMonth() + 3) / 3), //季度 
-      "S": this.getMilliseconds() //毫秒 
-    };
-    if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
-    for (var k in o)
-      if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
-    return fmt;
-  }
-
   return fetch('/graphql', init)
     .then(res => res.json())
     .then(json => json.data.entityByPath)
-    .then(array => array.map(f => { 
-      f.selected = false;
+    .then(array => array.map(f => {
       f.lastTime = new Date(f.lastTime).Format("yyyy-MM-dd hh:mm:ss");
       f.createTime = new Date(f.createTime).Format("yyyy-MM-dd hh:mm:ss");
       return f;
-     }))
+    }))
     .then(array => dispatch(getCurrentFiles(array)))
     .catch(e => console.log(e.message));
 }
@@ -401,7 +405,12 @@ export const fetchSearch = (name, path) => dispatch => {
 
   return fetch('/graphql', init)
     .then(res => res.json())
-    .then(json => dispatch(getSearchResult(json.data.entityByName)))
+    .then(json => json.data.entityByName.map(f => {
+      f.lastTime = new Date(f.lastTime).Format("yyyy-MM-dd hh:mm:ss");
+      f.createTime = new Date(f.createTime).Format("yyyy-MM-dd hh:mm:ss");
+      return f;
+    }))
+    .then(array => dispatch(getSearchResult(array)))
     .catch(e => console.log(e.message));
 }
 
@@ -423,7 +432,7 @@ export const fetchAddShare = (keys, isSecret) => dispatch => {
     .then(res => res.json())
     .then(json => dispatch(addShare(json.addr, json.secret)));
 }
-
+//获取分享记录
 export const fetchShareRecords = () => dispatch => {
   const query = `{
     shareRecords {
@@ -431,7 +440,8 @@ export const fetchShareRecords = () => dispatch => {
       name,
       isdir,
       addr,
-      secret
+      secret,
+      time
     }
   }`
   const init = {
@@ -443,8 +453,31 @@ export const fetchShareRecords = () => dispatch => {
     credentials: 'include',
     body: JSON.stringify({ query })
   }
-
   return fetch('/graphql', init)
     .then(res => res.json())
-    .then(json => dispatch(getShareRecords(json.data.shareRecords)))
+    .then(json => json.data.shareRecords.map(i => {
+      i.time = new Date(i.time).Format("yyyy-MM-dd hh:mm:ss");
+      return i;
+    }))
+    .then(records => dispatch(getShareRecords(records)))
+}
+
+//unshare 取消分享
+export const fetchUnshare = addrs => dispatch => {
+  const req = {
+    addrs
+  }
+  const init = {
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    method: 'DELETE',
+    credentials: 'include',
+    body: JSON.stringify(req)
+  }
+  return fetch('/unshare', init)
+    .then(res => res.json())
+    .then(json => console.log(json))
+    .then(() => dispatch(fetchShareRecords()));
 }

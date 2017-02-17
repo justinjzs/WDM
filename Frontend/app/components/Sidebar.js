@@ -3,8 +3,7 @@ import { connect } from 'react-redux'
 import { Link } from 'react-router'
 import merge from 'deepmerge'
 import { fetchAllFolders, 
-         fetchCurrentFiles, 
-         fetchShareRecords } from '../actions'
+         fetchCurrentFiles } from '../actions'
 import Collapse from './Collapse';
 
 class Sidebar extends Component {
@@ -12,7 +11,7 @@ class Sidebar extends Component {
     this.props.loadTreeHandler();
   }
   render() {
-    let { currentPath, loadShareRecods } = this.props;
+    let { currentPath } = this.props;
     let key = currentPath.match(/\d+/g) && +currentPath.match(/\d+/g).pop();
 
     let src = key ? "/css/svg/folder_white_16pix.svg" : "/css/svg/folder_green_16pix.svg";
@@ -23,15 +22,15 @@ class Sidebar extends Component {
         <div className="menu-list">
 
           <ul id="menu-content" className="menu-content collapse out">
-            <li  data-toggle="collapse" data-target="#home" onDoubleClick={e => this.props.loadFilesHandler()} className="collapsed">
-              <Link to="/home"><img src={src} className="sidebar-icon"/> Home <span className="arrow"></span></Link>
-            </li>
+            <Link to="/home"><li  data-toggle="collapse" data-target="#home" onDoubleClick={e => this.props.loadFilesHandler()} className="collapsed">
+              <img src={src} className="sidebar-icon"/><span> Home </span><span className="arrow"></span>
+            </li></Link>
             <ul id="home" className="collapse">
               <Collapse level={1} currentFolder={key} dClickHandler={this.props.loadFilesHandler} folders={this.props.tree.home.children} />
             </ul>
-            <li>
-              <img src="/css/svg/share_white.svg" className="sidebar-icon" /><Link to="/home/share" onClick={() => loadShareRecods()}> My Share</Link>
-            </li>
+            <Link to="/home/share"><li>
+              <img src="/css/svg/share_white.svg" className="sidebar-icon" /> <span>My Share</span>
+            </li></Link>
           </ul>
         </div>
       </div>
@@ -43,8 +42,7 @@ Sidebar.propTypes = {
   tree: PropTypes.object.isRequired,
   currentPath: PropTypes.string.isRequired,
   loadTreeHandler: PropTypes.func.isRequired,
-  loadFilesHandler: PropTypes.func.isRequired,
-  loadShareRecods: PropTypes.func.isRequired
+  loadFilesHandler: PropTypes.func.isRequired
 
 };
 
@@ -55,8 +53,7 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => ({
   loadTreeHandler: () => dispatch(fetchAllFolders()),
-  loadFilesHandler: path => dispatch(fetchCurrentFiles(path)),
-  loadShareRecods: () => dispatch(fetchShareRecords())
+  loadFilesHandler: path => dispatch(fetchCurrentFiles(path))
 });
 
 export default connect(

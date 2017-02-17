@@ -65,6 +65,7 @@ const createShare = () => new Promise((resolve, reject) => {
     addr    char(10) not null,
     secret  char(6) ,
     U_id    int not null,
+    time    varchar(100),
     key     bigint not null,
     D_hash  varchar(80) ,
     D_size  bigint,

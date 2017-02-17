@@ -1,5 +1,5 @@
 const query = require('./sharequery');
-const { 
+const {
   GraphQLSchema,
   GraphQLNonNull,
   GraphQLInterfaceType,
@@ -8,7 +8,7 @@ const {
   GraphQLObjectType,
   GraphQLBoolean,
   GraphQLInt,
- } = require('graphql')
+} = require('graphql')
 
 
 const QueryType = new GraphQLObjectType({
@@ -44,12 +44,22 @@ const QueryType = new GraphQLObjectType({
         key: { type: new GraphQLNonNull(GraphQLInt) }
       },
       resolve: (root, { key, addr }) => query.entityByKey(addr, key)
+    },
+    allFolders: {
+      type: new GraphQLList(folderType),
+      description: 'query all folders in share page',
+      args: {
+        addr: { type: new GraphQLNonNull(GraphQLString) }
+      },
+      resolve: (root, { addr }) => (
+        query.getAllFolders(addr)
+      )
     }
-   })
- })
+  })
+})
 
 
- //实体接口模型
+//实体接口模型
 const entityInterface = new GraphQLInterfaceType({
   name: 'entity',
   description: 'an entity (folder or file) in share',
@@ -77,7 +87,7 @@ const entityInterface = new GraphQLInterfaceType({
 
   }),
   resolveType(entity) {
-    if(entity.isdir)
+    if (entity.isdir)
       return folderType;
     else
       return fileType;
@@ -114,7 +124,7 @@ const fileType = new GraphQLObjectType({
       resolve: file => file.d_size
     }
   }),
-  interfaces: [ entityInterface ]
+  interfaces: [entityInterface]
 });
 //文件夹模型
 const folderType = new GraphQLObjectType({
@@ -147,13 +157,13 @@ const folderType = new GraphQLObjectType({
       resolve: ({key, path, addr}) => query.insideFolder(key, path, addr)
     }
   }),
-  interfaces: [ entityInterface ]
+  interfaces: [entityInterface]
 });
 
 
 const schema = new GraphQLSchema({
   query: QueryType,
-  types: [ fileType, folderType ]
+  types: [fileType, folderType]
 });
 
 module.exports = schema;

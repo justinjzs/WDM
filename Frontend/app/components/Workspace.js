@@ -2,6 +2,8 @@ import React, { Component, PropTypes } from 'react';
 import Row from './Row';
 import Displaybar from './Displaybar';
 import { connect } from 'react-redux'
+import getIconName from '../utils/getIconName'
+import formatBytes from '../utils/formatBytes'
 import {
   fetchCurrentFiles,
   selectFile,
@@ -20,6 +22,7 @@ class Workspace extends Component {
       order: false
     }
     this.changeOrder = this.changeOrder.bind(this);
+    this.checkAllHandler = this.checkAllHandler.bind(this);
   }
   componentWillMount() {
     this.props.loadFilesHandler();
@@ -32,54 +35,6 @@ class Workspace extends Component {
 
   checkAllHandler(e) {
     this.props.selectAll(e.target.checked);
-  }
-
-  getIconName(file) {
-    if (file.isdir)
-      return 'folder_24pix.svg';
-    let extname = file.name.match(/\.(doc|docx|pdf|xls|gif|jpg|svg|jpeg|png|mp4|avi|rmvb|wmv|mov|flv|webm|zip|rar|7z)$/i);
-    if (extname)
-      extname = extname[0];
-    switch (extname) {
-      case '.doc':
-      case '.docx':
-        return 'doc.svg';
-      case '.pdf':
-        return 'pdf.svg';
-      case '.xls':
-        return 'xls.svg'
-      case '.gif':
-      case '.svg':
-      case '.jpg':
-      case '.jpeg':
-      case '.png':
-        return 'image.svg';
-      case '.mp4':
-      case '.avi':
-      case '.rmvb':
-      case '.wmv':
-      case '.mov':
-      case '.flv':
-      case 'webm':
-        return 'video.svg';
-      case '.zip':
-      case '.rar':
-      case '.7z':
-        return 'zip.svg'
-      default:
-        return 'other.svg';
-    }
-  }
-
-  formatBytes(bytes, decimals = 3) {
-    if (!bytes)
-      return bytes;
-    if (bytes == 0) return '0 Bytes';
-    var k = 1000,
-      dm = decimals,
-      sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
-      i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
   }
   render() {
     const { order } = this.state;
@@ -128,9 +83,9 @@ class Workspace extends Component {
               return (
                 <Row key={file.key} {...file}
                   fileKey={file.key}
-                  size={this.formatBytes(file.size, 0)}
+                  size={formatBytes(file.size, 0)}
                   checkHandler={selectFile}
-                  icon={this.getIconName(file)}
+                  icon={getIconName(file)}
                   path={file.path + file.key + '/'}
                   clickHandler={loadFilesHandler} />
               )

@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha ./test/*/*.test.js",
-    "start": "node app.js",
+    "start": "webpack && node app.js",
     "dbinit": "node ./config/dbinit.js"
   },
   "author": "Jin",

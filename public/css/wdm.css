@@ -55,6 +55,7 @@
 #new-div,
 #addshare-div,
 #move-div,
+#unshare-div,
 #rename-div {
   display: inline;
 }
@@ -238,6 +239,9 @@ tr {
   height: 100%;
   color: #e1ffff;
 }
+.nav-side-menu a li span {
+  color: white;
+}
 .nav-side-menu .toggle-btn {
   display: none;
 }
@@ -255,7 +259,7 @@ tr {
 }
 
 
-.nav-side-menu>div>ul>li {
+.nav-side-menu>div>ul>a>li {
   line-height: 45px;
 }
 

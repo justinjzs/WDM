@@ -96,11 +96,26 @@ const getSerect = addr => new Promise((resolve, reject) => {
         resolve(result.rows[0].secret);
     })
 })
+/**
+ * @param {String} addr
+ * @returns {Promise} 
+ */
+const getAllFolders = addr => new Promise((resolve, reject) => {
+  const values = [addr, true];
+  query(`select key, name, path from share
+    where addr = $1 and isdir = $2`,
+    values,
+    (err, result) => {
+      if (err) return reject(err);
+      resolve(result.rows)
+    })
+})
 
 module.exports = {
   entityByKey,
   entityByPath,
   insideFolder,
   pathIsExist,
-  getSerect
+  getSerect,
+  getAllFolders
 }

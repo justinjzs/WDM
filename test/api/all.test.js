@@ -446,7 +446,7 @@ describe('DELETE /unshare', () => {
   it('取消分享', done => {
     request
       .post(`/unshare?_method=DELETE`)
-      .send({ addr: shareAddr })
+      .send({ addrs: [shareAddr] })
       .expect(200)
       .expect('Content-Type', /json/)
       .end((err, res) => {
@@ -459,7 +459,7 @@ describe('DELETE /unshare', () => {
   it('取消私密分享', done => {
     request
       .post(`/unshare?_method=DELETE`)
-      .send({ addr: secretShareAddr })
+      .send({ addrs: [secretShareAddr] })
       .expect(200)
       .expect('Content-Type', /json/)
       .end((err, res) => {

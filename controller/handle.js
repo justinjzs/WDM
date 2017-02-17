@@ -329,12 +329,13 @@ module.exports = function handle() {
   */
   const handleShare = (ctx, body) => new Promise((resolve, reject) => {  
     let { u_id, addr, secret, rows } = body;
+    const time = new Date().toString();
     secret = secret && `'${secret}'`;
     let values = rows.map(row => (
-      `('${addr}', ${secret}, ${u_id}, ${row.key}, '${row.d_hash}', ${row.d_size}, '${row.d_dir}', ${row.isdir}, '${row.path}', '${row.name}')`
+      `('${addr}', ${secret}, ${u_id}, ${row.key}, '${row.d_hash}', ${row.d_size}, '${row.d_dir}', ${row.isdir}, '${row.path}', '${row.name}', '${time}')`
     ));
     values = values.join(',');
-    ctx.dbquery(`insert into share (addr, secret, u_id, key, d_hash, d_size, d_dir, isdir, path, name) values ${values} returning addr, secret;`,
+    ctx.dbquery(`insert into share (addr, secret, u_id, key, d_hash, d_size, d_dir, isdir, path, name, time) values ${values} returning addr, secret;`,
       undefined,
       (err, result) => {
         if (err) return reject(err);
@@ -350,9 +351,10 @@ module.exports = function handle() {
   * @returns {Promise}
   */
   const handleUnshare = (ctx, body) => new Promise((resolve, reject) => { 
-    const { addr, u_id } = body;
-    const values = [addr, u_id];
-    ctx.dbquery(`delete from share where addr = $1 and u_id = $2 ;`,
+    let { addrs, u_id } = body;
+    addrs = addrs.map(addr => `'${addr}'`);
+    const values = [u_id];
+    ctx.dbquery(`delete from share where addr in (${addrs.toString()}) and u_id = $1 ;`,
       values,
       (err, result) => {
         if (err) return reject(err);

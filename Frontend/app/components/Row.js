@@ -17,7 +17,7 @@ const Row = ({
   <tr onClick={() => checkHandler(fileKey) }>
     <td className="center-cell" >
       <div className="checkbox">
-        <input className="styled" type='checkbox' checked={selected} onChange={e => checkHandler(fileKey)} onClick={() => checkHandler(fileKey) }/>
+        <input className="styled" type='checkbox' checked={selected}/>
         <label></label>
       </div>
     </td>

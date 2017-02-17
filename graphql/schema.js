@@ -7,7 +7,7 @@ const {
   GraphQLString,
   GraphQLObjectType,
   GraphQLBoolean,
-  GraphQLInt,
+  GraphQLInt
  } = require('graphql')
 
 //mutation模型
@@ -158,6 +158,10 @@ const shareRecordType = new GraphQLObjectType({
     isdir: {
       type: GraphQLBoolean,
       description: 'indicate the type of the file that represents the record'
+    },
+    time: {
+      type: GraphQLString,
+      description: 'when the files are shared'
     }
   })
 })
