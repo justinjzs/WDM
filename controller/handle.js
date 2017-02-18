@@ -417,18 +417,36 @@ module.exports = function handle() {
    * @returns {Promise} 
    */
   const handleDownshare = (ctx, body) => new Promise((resolve, reject) => { 
-    const { addr } = body;
+    const { addr, keys } = body;
     const values = [addr];
-    ctx.dbquery(`select key, name, path, isdir, d_dir from share where addr = $1 ;`,
+    ctx.dbquery(`select key, name, path, isdir, d_dir from share 
+      where addr = $1 and key in (${keys.toString()});`,
       values,
       (err, result) => {
         if (err) return reject(err);
         resolve(result.rows);
       });
   });
-
-
-
+  /**get all keys to download
+   * @param {Object} ctx
+   * @param {Object} body
+   * @param {String} body.addr
+   * @param {Array|Number} body.key
+   * @returns {Promise} 
+   */
+  const getAllDownshareKeys = (ctx, body) => new Promise((resolve, reject) => { 
+    const { addr, key } = body;
+    const keys = Array.isArray(key) ? key : [key]; 
+    const pathReg = '%(' + keys.join('|') + ')%'; //获得子文件的key
+    const values = [addr];
+    ctx.dbquery(`select key from share 
+      where addr = $1 and (key in (${keys.toString()}) or path similar to '${pathReg}');`,
+      values,
+      (err, result) => {
+        if (err) return reject(err);
+        resolve(result.rows.map(row => row.key));
+      });
+  });
   /**generate the files tree
    * @param {Object} fields
    * @param {Array} files
@@ -672,7 +690,8 @@ return {
   copyFiles,
   pathIsExist,
   getAllFiles,
-  getShare
+  getShare,
+  getAllDownshareKeys
 }
 
 

@@ -98,6 +98,24 @@ const getSerect = addr => new Promise((resolve, reject) => {
 })
 /**
  * @param {String} addr
+ * @param {String} secret
+ * @returns {Promise} resolve(boolean)
+ */
+const auth = (addr, secret) => new Promise((resolve, reject) => {
+  let param = secret ? `='${secret}'` : 'is null';
+  query(`select distinct secret from share 
+    where addr = $1 and secret ${param};`,
+    [addr],
+    (err, result) => {
+      if (err) return reject(err);
+      if(!result.rows.length)
+        return resolve(false);
+      else 
+        resolve(true);
+    })
+})
+/**
+ * @param {String} addr
  * @returns {Promise} 
  */
 const getAllFolders = addr => new Promise((resolve, reject) => {
@@ -117,5 +135,6 @@ module.exports = {
   insideFolder,
   pathIsExist,
   getSerect,
-  getAllFolders
+  getAllFolders,
+  auth
 }

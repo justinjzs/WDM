@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
-import Collapse from './Collapse'
 import View from './View'
-export default class Move extends Component {
+export default class SaveTo extends Component {
   constructor(props){
     super(props);
     this.state = {
@@ -18,23 +17,23 @@ export default class Move extends Component {
   }
   render() {
     let src = this.state.selectedFolder ? "/css/svg/folder_24pix.svg" : "/css/svg/folder_green_16pix.svg";
-    const { tree, moveHandler } = this.props;
+    const { tree, saveHandler } = this.props;
     const { selectedFolder, newPath } = this.state;
     return (
-      <div id="move-div">
-        <button type="button" className="btn btn-default btn-sm tool" data-toggle="modal" data-target="#moveto">
-          <img src="/css/svg/moveto.svg" className="funcbarsvg" /> Move to
+      <div id="Save-div">
+        <button type="button" className="btn btn-default btn-sm tool" data-toggle="modal" data-target="#Saveto">
+          <img src="/css/svg/moveto.svg" className="funcbarsvg" /> Save to
         </button>
-        <div id="moveto" className="modal fade" ref="modal" role="move to">
+        <div id="Saveto" className="modal fade" ref="modal" role="Save to">
           <div className="modal-dialog modal-sm">
             <div className="modal-content">
               <div className="modal-header">
                 <button type="button" className="close" data-dismiss="modal">&times;</button>
-                <h4 className="modal-title">Move to</h4>
+                <h4 className="modal-title">Save to</h4>
               </div>
               <div className="modal-body">
                 <img className="view-icon" src={src} /><a data-toggle="collapse" href="#movehome" onClick={() => this.clickHandler(0, '/')}>Home</a>
-                <View folders={tree.home.children}
+                <View folders={tree.children}
                       level={1} 
                       selected={selectedFolder}
                       clickHandler={this.clickHandler}
@@ -42,7 +41,7 @@ export default class Move extends Component {
               </div>
               <div className="modal-footer">
                 <button type="button" className="btn btn-default" data-dismiss="modal">Close</button>
-                <button type="button" className="btn btn-primary" data-dismiss="modal" onClick={() => moveHandler(newPath)} >Move</button>
+                <button type="button" className="btn btn-primary" data-dismiss="modal" onClick={() => saveHandler(newPath)} >Save</button>
               </div>
             </div>
           </div>

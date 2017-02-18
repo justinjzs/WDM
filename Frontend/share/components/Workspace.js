@@ -6,20 +6,31 @@ import {
   fetchMap,
   selectFile,
   selectAll,
-  fetchDownload
+  fetchDownload,
+  fetchAllFolders,
+  fetchSaveTo
 } from '../actions'
 import Row from './Row.js'
 import Breadcrumb from './Breadcrumb.js'
+import Save from './Save'
 import getIconName from '../utils/getIconName'
 import formatBytes from '../utils/formatBytes'
+import getSelectedNumber from '../utils/getSelectedNumber'
+import getSelectedKeys from '../utils/getSelectedKeys'
 
 class Workspace extends Component {
   componentWillMount() {
     this.props.loadCurrentFiles();
     this.props.loadMap();
+    this.props.loadMyTree();
   }
   checkAllHandler(e) {
     this.props.selectAllHandler(e.target.checked);
+  }
+  saveHandler() {
+    const { currentFiles, save } = this.props;
+    let keys = getSelectedKeys(currentFiles);
+    return save(keys);
   }
   downloadHandler() {
     const { currentFiles, download } = this.props;
@@ -32,17 +43,21 @@ class Workspace extends Component {
   }
   render() {
     const { currentFiles,
-      loadCurrentFiles,
-      currentPath,
-      map,
-      selectFileHandler } = this.props;
+            isLoggedin,
+            loadCurrentFiles,
+            currentPath,
+            map,
+            tree,
+            selectFileHandler } = this.props;
+    const num = getSelectedNumber(currentFiles);
     return (
       <div className="workspace table-responsive">
         <div>
           <Breadcrumb currentPath={currentPath} map={map} clickHandler={loadCurrentFiles} />
           <div className="toolbar">
-            <button type="button" className="btn btn-default btn-sm tool"
-              onClick={() => this.downloadHandler()} >Download</button>
+            {!!num && <button type="button" className="btn btn-default btn-sm tool"
+              onClick={() => this.downloadHandler()} >Download</button>}
+            {isLoggedin && !!num && <Save tree={tree} saveHandler={this.saveHandler()} />}
           </div>
         </div>
         <table className="table table-hover">
@@ -80,13 +95,19 @@ Workspace.propTypes = {
   map: PropTypes.object.isRequired,
   selectFileHandler: PropTypes.func.isRequired,
   selectAllHandler: PropTypes.func.isRequired,
-  download: PropTypes.func.isRequired
+  download: PropTypes.func.isRequired,
+  loadMyTree: PropTypes.func.isRequired,
+  save: PropTypes.func.isRequired,
+  tree: PropTypes.object.isRequired,
+  isLoggedin: PropTypes.bool.isRequired
 }
 
 const mapStateToProps = state => ({
   currentFiles: merge({}, state.workspace.currentFiles, { clone: true }),
   currentPath: state.workspace.currentPath,
-  map: merge({}, state.workspace.map, { clone: true })
+  map: merge({}, state.workspace.map, { clone: true }),
+  tree: merge({}, state.mytree, { clone: true }),
+  isLoggedin: state.isLoggedin
 })
 
 const mapDispatchToProps = dispatch => ({
@@ -94,7 +115,9 @@ const mapDispatchToProps = dispatch => ({
   loadMap: () => dispatch(fetchMap()),
   selectFileHandler: key => dispatch(selectFile(key)),
   selectAllHandler: checked => dispatch(selectAll(checked)),
-  download: keys => dispatch(fetchDownload(keys))
+  download: keys => dispatch(fetchDownload(keys)),
+  loadMyTree: () => dispatch(fetchAllFolders()),
+  save: keys => path => dispatch(fetchSaveTo(keys, path))
 })
 
 export default connect(

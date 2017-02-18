@@ -23,6 +23,15 @@ const QueryType = new GraphQLObjectType({
       },
       resolve: (root, { addr }) => query.getSerect(addr)
     },
+    auth: {
+      type: GraphQLBoolean,
+      description: 'auth the specified share page',
+      args: {
+        addr: { type: new GraphQLNonNull(GraphQLString) },
+        secret: { type: GraphQLString }
+      },
+      resolve: (root, { addr, secret }) => query.auth(addr, secret)
+    },
     entityByPath: {
       type: new GraphQLList(entityInterface),
       description: 'query entities in specified path',

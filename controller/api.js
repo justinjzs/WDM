@@ -104,7 +104,7 @@ module.exports = {
         throw Error('目标文件不存在!');
 
     } else { //多文件或文件夹
-      //文件信息
+      //文件下载所需信息
       files = yield handle.searchFiles(this, file);
       //移除前缀
       handle.rmPrefix(files);
@@ -231,6 +231,7 @@ module.exports = {
     //获取query
     const query = this.query;
     //查询文件信息
+    query.keys = yield handle.getAllDownshareKeys(this, query);
     const files = yield handle.handleDownshare(this, query);
     //请求的分享页地址错误或不存在
     if (!files.length)
