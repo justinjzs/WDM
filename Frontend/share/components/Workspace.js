@@ -56,7 +56,8 @@ class Workspace extends Component {
           <Breadcrumb currentPath={currentPath} map={map} clickHandler={loadCurrentFiles} />
           <div className="toolbar">
             {!!num && <button type="button" className="btn btn-default btn-sm tool"
-              onClick={() => this.downloadHandler()} >Download</button>}
+              onClick={() => this.downloadHandler()} >
+              <img src="/css/svg/download.svg" className="funcbarsvg" />Download</button>}
             {isLoggedin && !!num && <Save tree={tree} saveHandler={this.saveHandler()} />}
           </div>
         </div>

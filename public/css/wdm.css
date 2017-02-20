@@ -52,18 +52,17 @@
   background-color: white;
   border-color: #c7c7c7;
 }
-#new-div,
-#addshare-div,
-#move-div,
-#unshare-div,
-#rename-div {
+
+#unshare-div {
   display: inline;
 }
 .modal-dialog {
   position: absolute;
   left: 40%;
   top: 40%
-
+}
+.hover-share-modal .modal-body>div {
+  line-height: 50px;
 }
 #addshare .modal-body>div {
   line-height: 50px;
@@ -169,6 +168,15 @@ input[type=file] {
   bottom: 0px;
   top: 70px;
 }
+.under-table {
+  width: 100%;
+  height: 100%;
+}
+.react-contextmenu-item span {
+  display: inline-block;
+  width: 100%;
+  height: 100%
+}
 
 thead {
   border: 1px solid #c7c7c7;
@@ -177,7 +185,9 @@ thead {
   margin: 0px 5px;
 }
 .table>thead>tr>th {
+  padding: 0px;
   border-bottom: 1px solid #c7c7c7;
+  vertical-align: middle;
 }
 
 tr td span {
@@ -190,7 +200,8 @@ th {
   vertical-align: middle;
   font-family: verdana;
   height: 45px;
-  font-size: 18px;
+  padding: 0px;
+  font-size: 15px;
   font-weight: 300;
   background-color: #f3f3f3;
 }
@@ -203,11 +214,28 @@ tr {
   height: 30px;
   padding: 7px 8px;
 }
+.hoverbar {
+  float: right;
+  max-height: 30px;
+  margin-left: auto;
+  margin-right: 5px;
 
-.center-cell {
-  text-align: center;
-  vertical-align: middle;
 }
+.hoversvg {
+  height: auto;
+  width: 18px;
+  height: 18px;
+  padding: 1px;
+  margin: 6px 3px;
+}
+.hoversvg:hover {
+  background-color: #B0E0E6;
+}
+.hover-more {
+  display: inline;
+}
+
+
 .checkbox {
   width: 16px;
   height: 16px;
@@ -336,4 +364,51 @@ tr {
 body {
   margin: 0px;
   padding: 0px;
+}
+
+
+.react-contextmenu {
+    min-width: 160px;
+    padding: 5px 0;
+    margin: 2px 0 0;
+    font-size: 16px;
+    color: #373a3c;
+    text-align: left;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid rgba(0,0,0,.15);
+    border-radius: .25rem;
+    outline: none;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.react-contextmenu.react-contextmenu--visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.react-contextmenu-item {
+    width: 200px;
+    padding: 3px 20px;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #373a3c;
+    text-align: inherit;
+    white-space: nowrap;
+    background: 0 0;
+    border: 0;
+	cursor: pointer;
+}
+
+.react-contextmenu-item.react-contextmenu-item--active,
+.react-contextmenu-item:hover {
+    color: #fff;
+    background-color: #0275d8;
+    border-color: #0275d8;
+    text-decoration: none;
+}
+
+.react-contextmenu-item.react-contextmenu-submenu {
+	padding: 0;
 }

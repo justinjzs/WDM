@@ -16,6 +16,13 @@ export const SHARE_RECORDS_SELECT = 'SHARE_RECORDS_SELECT'
 export const SHARE_RECORDS_SELECT_ALL = 'SHARE_RECORDS_SELECT_ALL'
 export const SHARE_RECORDS_SORTBYNAME = 'SHARE_RECORDS_SORTBYNAME'
 export const SHARE_RECORDS_SORTBYTIME = 'SHARE_RECORDS_SORTBYTIME'
+export const USER_NAME = 'USER_NAME'
+
+//username
+export const getUserName = name => ({
+  type: USER_NAME,
+  name
+})
 
 //shareReducer
 export const sortShareRecordsByName = order => ({
@@ -262,12 +269,7 @@ export const fetchMkdir = (name, path) => dispatch => {
 }
 
 //delete 
-export const ajaxDelete = files => dispatch => {
-  let keys = [];
-  for (let file of files) {
-    if (file.selected)
-      keys.push(file.key);
-  }
+export const ajaxDelete = keys => dispatch => {
   const xhr = new XMLHttpRequest();
   xhr.open('POST', '/delete?_method=DELETE', true);
   xhr.setRequestHeader("Content-Type", "application/json");
@@ -343,12 +345,8 @@ export const fetchMove = (keys, prePath, newPath) => dispatch => {
 
 
 //download
-export const ajaxDownload = files => dispatch => {
-  let keys = [];
-  for (let file of files) {
-    if (file.selected)
-      keys.push(file.key);
-  }
+export const ajaxDownload = keys => dispatch => {
+
   keys = keys.map(key => `key=${key}`);
   const query = keys.join('&');
   const xhr = new XMLHttpRequest();
@@ -480,4 +478,23 @@ export const fetchUnshare = addrs => dispatch => {
     .then(res => res.json())
     .then(json => console.log(json))
     .then(() => dispatch(fetchShareRecords()));
+}
+
+//get username
+export const fetchUserName = () => dispatch => {
+  const query = `{
+    userInfo
+  }`
+  const init = {
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    method: 'POST',
+    credentials: 'include',
+    body: JSON.stringify({ query })
+  }
+  return fetch('/graphql', init)
+    .then(res => res.json())
+    .then(json => dispatch(getUserName(json.data.userInfo)));
 }

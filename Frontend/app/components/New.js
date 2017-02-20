@@ -17,16 +17,11 @@ export default class New extends Component {
   }
   mkdir() {
     const name = this.input.value;
-    const currentPath = this.props.currentPath;
-    name && this.props.mkdirHandler(name, currentPath);
+    name && this.props.mkdirHandler(name);
   }
 
   render() {
     return (
-      <div id="new-div">
-        <button type="button" id="new" className="btn btn-default btn-sm" data-toggle="modal" data-target="#newFolder">
-          <img src="/css/svg/new.svg" className="funcbarsvg" />New
-        </button>
       <div id="newFolder" className="modal fade" ref="modal" role="new folder">
         <div className="modal-dialog modal-sm">
           <div className="modal-content">
@@ -39,11 +34,10 @@ export default class New extends Component {
             </div>
             <div className="modal-footer">
               <button type="button" className="btn btn-default" data-dismiss="modal">Close</button>
-              <button type="button" className="btn btn-primary" data-dismiss="modal" onClick={() => this.mkdir()}>Submit</button>
+              <button type="button" className="btn btn-primary" data-dismiss="modal" onClick={() => this.mkdir()}>New</button>
             </div>
           </div>
         </div>
-      </div>
       </div>
     )
   }

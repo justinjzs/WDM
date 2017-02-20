@@ -18,14 +18,10 @@ export default class Move extends Component {
   }
   render() {
     let src = this.state.selectedFolder ? "/css/svg/folder_24pix.svg" : "/css/svg/folder_green_16pix.svg";
-    const { tree, moveHandler } = this.props;
+    const { tree, moveHandler, id } = this.props;
     const { selectedFolder, newPath } = this.state;
     return (
-      <div id="move-div">
-        <button type="button" className="btn btn-default btn-sm tool" data-toggle="modal" data-target="#moveto">
-          <img src="/css/svg/moveto.svg" className="funcbarsvg" /> Move to
-        </button>
-        <div id="moveto" className="modal fade" ref="modal" role="move to">
+        <div id={id || "moveto"} className="modal fade" ref="modal" role="move to">
           <div className="modal-dialog modal-sm">
             <div className="modal-content">
               <div className="modal-header">
@@ -47,7 +43,6 @@ export default class Move extends Component {
             </div>
           </div>
         </div>
-      </div>
     )
   }
 }

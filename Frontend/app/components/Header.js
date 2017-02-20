@@ -1,6 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux'
-import { fetchSearch } from '../actions'
+import { fetchSearch, fetchUserName } from '../actions'
 
 class Header extends Component {
   constructor(props) {
@@ -14,7 +14,9 @@ class Header extends Component {
     this.rangeHandler = this.rangeHandler.bind(this);
     this.searchHandler = this.searchHandler.bind(this);
   }
-
+  componentWillMount() {
+    this.props.getUserName();
+  }
   inputHandler(e) {
     this.setState({
       inputText: e.target.value
@@ -32,7 +34,7 @@ class Header extends Component {
     search(inputText, searchPath);
   }
   render() {
-    const { currentPath } = this.props;
+    const { currentPath, userName } = this.props;
     const { inputText } = this.state;
     const toUrl = `/home/search/${inputText}`;
     return (
@@ -57,7 +59,7 @@ class Header extends Component {
             </span>
           </div>
           <ul className="nav navbar-nav navbar-right">
-            <li><a href="#"><img src="/css/svg/user.svg" /> Hi</a></li>
+            <li><a href="#"><img src="/css/svg/user.svg" /> Hi,{userName}</a></li>
             <li><a href="/logout"><span className="fa fa-sign-out fa-2x"></span> Log out</a></li>
           </ul>
         </div>
@@ -68,15 +70,19 @@ class Header extends Component {
 
 Header.propTypes = {
   currentPath: PropTypes.string.isRequired,
-  search: PropTypes.func.isRequired
+  search: PropTypes.func.isRequired,
+  getUserName: PropTypes.func.isRequired,
+  userName: PropTypes.string.isRequired
 }
 
 const mapStateToProps = state => ({
-  currentPath: state.workspace.currentPath
+  currentPath: state.workspace.currentPath,
+  userName: state.user.name
 })
 
 const mapDispatchToProps = dispatch => ({
-  search: (name, path) => dispatch(fetchSearch(name, path))
+  search: (name, path) => dispatch(fetchSearch(name, path)),
+  getUserName: () => dispatch(fetchUserName())
 })
 
 export default connect(

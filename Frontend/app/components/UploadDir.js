@@ -6,11 +6,11 @@ export default class UploadDir extends Component {
   }
 
   render() {
-    const { currentPath, uploadDirHandler } = this.props;
+    const { uploadDirHandler } = this.props;
     return (
-      <label htmlFor="dir">
-        <input id='dir' type="file" name='dir' ref={e => this.input = e} onChange={() => uploadDirHandler(currentPath)} />
-        <li><i className="fa fa-folder" aria-hidden="true">Upload Folder</i></li>
+      <label id="upload-dir" htmlFor="dir">
+        <input id='dir' type="file" name='dir' ref={e => this.input = e} onChange={() => uploadDirHandler()} />
+        <i className="fa fa-folder" aria-hidden="true">Upload Folder</i>
       </label>
     )
   }

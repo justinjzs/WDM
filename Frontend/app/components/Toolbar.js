@@ -12,6 +12,7 @@ import {
   resetAddShare
 } from '../actions'
 import merge from 'deepmerge'
+import getSelectedKeys from '../utils/getSelectedKeys'
 
 class Toolbar extends Component {
   constructor(props) {
@@ -24,50 +25,54 @@ class Toolbar extends Component {
   }
   downloadHandler() {
     const { currentFiles, download } = this.props;
-    download(currentFiles);
+    const keys = getSelectedKeys(currentFiles);
+    download(keys);
   }
   renameHandler() {
-    const { currentPath, rename } = this.props;
-    return rename(currentPath);
+    const { currentPath, currentFiles, rename } = this.props;
+    const key = getSelectedKeys(currentFiles).pop();
+    return rename(currentPath, key);
   }
   deleteHandler() {
     const { currentFiles, deleteFiles } = this.props;
-    deleteFiles(currentFiles);
+    const keys = getSelectedKeys(currentFiles);
+    deleteFiles(keys);
   }
   moveHandler() {
     const { currentPath, currentFiles, move } = this.props;
-    let keys = [];
-    for (let file of currentFiles) {
-      if (file.selected)
-        keys.push(file.key);
-    }
+    const keys = getSelectedKeys(currentFiles);
     return move(keys, currentPath);
   }
   addShareHandler() {
     const { currentFiles, addShare } = this.props;
-    let keys = [];
-    for (let file of currentFiles) {
-      if (file.selected)
-        keys.push(file.key);
-    }
+    const keys = getSelectedKeys(currentFiles);
     return addShare(keys);
   }
 
   render() {
-    const {show, renameFile, tree, addShare, addShareLink, resetAddShare } = this.props;
+    const {show, name, tree, addShare, addShareLink, resetAddShare } = this.props;
     return (
       <div className="toolbar">
+        <button type="button" className="btn btn-default btn-sm tool" data-toggle="modal" data-target="#addshare">
+          <img src="/css/svg/share_green.svg" className="funcbarsvg" />Share
+        </button>
         <AddShare addShareHandler={this.addShareHandler()}
-                  resetHandler={resetAddShare} 
-                  addShareLink={addShareLink} />
+          resetHandler={resetAddShare}
+          addShareLink={addShareLink} />
         <button type="button" className="btn btn-default btn-sm tool" onClick={() => this.downloadHandler()}>
           <img src="/css/svg/download.svg" className="funcbarsvg" /> Download
         </button>
         <button type="button" className="btn btn-default btn-sm tool" onClick={() => this.deleteHandler()}>
           <img src="/css/svg/delete.svg" className="funcbarsvg" /> Delete
         </button>
+        <button type="button" className="btn btn-default btn-sm tool" data-toggle="modal" data-target="#moveto">
+          <img src="/css/svg/moveto.svg" className="funcbarsvg" /> Move to
+        </button>
         <Move tree={tree} moveHandler={this.moveHandler()} />
-        {show || <Rename renameHandler={this.renameHandler()} renameFile={renameFile} />}
+        {show || <button type="button" className="btn btn-default btn-sm tool" data-toggle="modal" data-target="#rename">
+          <img src="/css/svg/rename.svg" className="funcbarsvg" /> Rename
+        </button>}
+        <Rename renameHandler={this.renameHandler()} name={name} />
       </div>
     )
   }
@@ -94,10 +99,10 @@ const mapStateToProps = state => ({
 })
 
 const mapDispatchToProps = dispatch => ({
-  download: currentFiles => dispatch(ajaxDownload(currentFiles)),
+  download: keys => dispatch(ajaxDownload(keys)),
   move: (keys, prePath) => newPath => dispatch(fetchMove(keys, prePath, newPath)),
-  deleteFiles: currentFiles => dispatch(ajaxDelete(currentFiles)),
-  rename: currentPath => (key, name) => dispatch(fetchRename(key, name, currentPath)),
+  deleteFiles: keys => dispatch(ajaxDelete(keys)),
+  rename: (currentPath, key) => name => dispatch(fetchRename(key, name, currentPath)),
   addShare: keys => isSecret => dispatch(fetchAddShare(keys, isSecret)),
   resetAddShare: () => dispatch(resetAddShare())
 

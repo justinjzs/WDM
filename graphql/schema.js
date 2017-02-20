@@ -131,6 +131,11 @@ const QueryType = new GraphQLObjectType({
       resolve: (root, args, ctx) => (
         query.getAllShareRecords(ctx.req.user)
       )
+    },
+    userInfo: {
+      type: GraphQLString,
+      description: 'get user info',
+      resolve: (root, args, ctx) => ctx.req.user.u_name
     }
   })
 }) 

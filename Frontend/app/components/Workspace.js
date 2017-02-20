@@ -2,10 +2,15 @@ import React, { Component, PropTypes } from 'react';
 import Row from './Row';
 import Displaybar from './Displaybar';
 import { connect } from 'react-redux'
+import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
 import getIconName from '../utils/getIconName'
 import formatBytes from '../utils/formatBytes'
+import UploadFiles from './UploadFiles'
+import UploadDir from './UploadDir'
+import New from './New'
 import {
   fetchCurrentFiles,
+  fetchMkdir,
   selectFile,
   selectAll,
   sortByName,
@@ -23,7 +28,9 @@ class Workspace extends Component {
     }
     this.changeOrder = this.changeOrder.bind(this);
     this.checkAllHandler = this.checkAllHandler.bind(this);
+    this.mkdirHandler = this.mkdirHandler.bind(this);
   }
+
   componentWillMount() {
     this.props.loadFilesHandler();
   }
@@ -32,7 +39,10 @@ class Workspace extends Component {
       order: !this.state.order
     })
   }
-
+  mkdirHandler() {
+    const { currentPath, mkdir } = this.props;
+    return mkdir(currentPath);
+  }
   checkAllHandler(e) {
     this.props.selectAll(e.target.checked);
   }
@@ -54,26 +64,26 @@ class Workspace extends Component {
         <table className="table table-hover" >
           <thead>
             <tr>
-              <th className="center-cell" width="50px">
+              <th width="50px">
                 <div className="checkbox">
-                  <input type='checkbox' className="styled" onChange={e => this.checkAllHandler(e)} />
+                  <input type='checkbox' className="center-checkbox" className="styled" onChange={e => this.checkAllHandler(e)} />
                   <label></label>
                 </div>
               </th>
-              <th width="40%">Name<a href="javascript:void(0)" 
-                                     onClick={() => {sortByName(order); this.changeOrder();}}>
+              <th width="50%">Name<a href="javascript:void(0)"
+                onClick={() => { sortByName(order); this.changeOrder(); } }>
                 <i className="fa fa-sort" aria-hidden="true"></i></a>
               </th>
-              <th >Size<a href="javascript:void(0)" 
-                          onClick={() => {sortBySize(order); this.changeOrder();}}>
+              <th >Size<a href="javascript:void(0)"
+                onClick={() => { sortBySize(order); this.changeOrder(); } }>
                 <i className="fa fa-sort" aria-hidden="true"></i></a>
               </th>
-              <th >LastModified<a href="javascript:void(0)" 
-                                  onClick={() => {sortByLastTime(order); this.changeOrder();}}>
+              <th >LastModified<a href="javascript:void(0)"
+                onClick={() => { sortByLastTime(order); this.changeOrder(); } }>
                 <i className="fa fa-sort" aria-hidden="true"></i></a>
               </th>
-              <th>CreateTime<a href="javascript:void(0)" 
-                               onClick={() => {sortByCreateTime(order); this.changeOrder();}}>
+              <th>CreateTime<a href="javascript:void(0)"
+                onClick={() => { sortByCreateTime(order); this.changeOrder(); } }>
                 <i className="fa fa-sort" aria-hidden="true"></i></a>
               </th>
             </tr>
@@ -92,6 +102,21 @@ class Workspace extends Component {
             })}
           </tbody>
         </table>
+        <ContextMenuTrigger attributes={{ className: 'under-table' }} id="under-table">
+        </ContextMenuTrigger>
+        <ContextMenu id="under-table" >
+          <MenuItem>
+            <span data-toggle="modal" data-target="#newFolder">New Folder</span>
+          </MenuItem>
+          <MenuItem onClick={() => $('#upload-files').click()}>
+            <span>Upload Files </span>
+          </MenuItem>
+          <MenuItem divider />
+          <MenuItem onClick={() => $('#upload-dir').click()}>
+            <span>Upload Folder </span>
+          </MenuItem>
+        </ContextMenu>
+        <New mkdirHandler={this.mkdirHandler()} />
       </div>
     );
   }
@@ -109,7 +134,8 @@ Workspace.propTypes = {
   sortByName: PropTypes.func.isRequired,
   sortBySize: PropTypes.func.isRequired,
   sortByLastTime: PropTypes.func.isRequired,
-  sortByCreateTime: PropTypes.func.isRequired
+  sortByCreateTime: PropTypes.func.isRequired,
+  mkdir: PropTypes.func.isRequired
 };
 
 const mapStateToProps = state => ({
@@ -126,7 +152,8 @@ const mapDispatchToProps = dispatch => ({
   sortByName: order => dispatch(sortByName(order)),
   sortBySize: order => dispatch(sortBySize(order)),
   sortByLastTime: order => dispatch(sortByLastTime(order)),
-  sortByCreateTime: order => dispatch(sortByCreateTime(order))
+  sortByCreateTime: order => dispatch(sortByCreateTime(order)),
+  mkdir: path => name => dispatch(fetchMkdir(name, path))
 })
 
 export default connect(

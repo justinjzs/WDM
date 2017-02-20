@@ -16,18 +16,14 @@ export default class Rename extends Component {
     $('#rename input').select();
   }
   rename() {
-    const {renameFile, renameHandler} = this.props;
+    const {renameHandler} = this.props;
     const name = this.input.value;
-    name && renameHandler(renameFile.key, name);
+    name && renameHandler(name);
   }
 
   render() {
     return (
-      <div id="rename-div">
-      <button type="button" className="btn btn-default btn-sm tool" data-toggle="modal" data-target="#rename">
-          <img src="/css/svg/rename.svg" className="funcbarsvg" /> Rename 
-        </button>
-      <div id="rename" className="modal fade" ref="modal" role="rename">
+      <div id={this.props.id || "rename"} className="modal fade" ref="modal" role="rename">
         <div className="modal-dialog modal-sm">
           <div className="modal-content">
             <div className="modal-header">
@@ -35,15 +31,14 @@ export default class Rename extends Component {
               <h4 className="modal-title">New Name</h4>
             </div>
             <div className="modal-body">
-              <input type="text" style={{width: "270px"}} ref={e => this.input = e} defaultValue={this.props.renameFile.name}/>
+              <input type="text" style={{width: "270px"}} ref={e => this.input = e} defaultValue={this.props.name}/>
             </div>
             <div className="modal-footer">
               <button type="button" className="btn btn-default" data-dismiss="modal">Close</button>
-              <button type="button" className="btn btn-primary" data-dismiss="modal" onClick={() => this.rename()}>Submit</button>
+              <button type="button" className="btn btn-primary" data-dismiss="modal" onClick={() => this.rename()}>Rename</button>
             </div>
           </div>
         </div>
-      </div>
       </div>
     )
   }

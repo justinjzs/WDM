@@ -233,7 +233,7 @@ export const fetchAuth = () => dispatch => {
     .then(auth => auth ? dispatch(noAuth()) : dispatch(unAuthed()));
 
 }
-
+//
 export const fetchAuthWithSecret = ( secret = '' ) => dispatch => {
   const addr = getParameterByName('addr');
   const query = `{

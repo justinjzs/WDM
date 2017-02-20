@@ -3,22 +3,36 @@ import { connect } from 'react-redux'
 import New from './New'
 import UploadFiles from './UploadFiles'
 import UploadDir from './UploadDir'
-import { fetchCurrentFiles, fetchMkdir, ajaxUpload ,ajaxUploadDir } from '../actions'
+import { fetchCurrentFiles, ajaxUpload, ajaxUploadDir } from '../actions'
 
 class Functionbar extends Component {
+  constructor(props) {
+    super(props);
+    this.uploadHandler = this.uploadHandler.bind(this);
+    this.uploadDirHandler = this.uploadDirHandler.bind(this);
+  }
+  uploadHandler() {
+    const { currentPath, upload } = this.props;
+    upload(currentPath);
+  }
+  uploadDirHandler() {
+    const { currentPath, uploadDir } = this.props;
+    uploadDir(currentPath);
+  }
   render() {
-    const { currentPath, upload, uploadDir, mkdir } = this.props;
     return (
-      
+
       <div className="functionbar">
-        <New mkdirHandler={mkdir} currentPath={currentPath}/>
+        <button type="button" id="new" className="btn btn-default btn-sm" data-toggle="modal" data-target="#newFolder">
+          <img src="/css/svg/new.svg" className="funcbarsvg" />New
+        </button>
         <div className="dropdown" id="upload-dropdown">
-          <button type="button" id="upload"  className="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
+          <button type="button" id="upload" className="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
             <img src="/css/svg/upload.svg" className="funcbarsvg" />Upload <span className="caret"></span>
           </button>
           <ul className="dropdown-menu">
-            <UploadFiles uploadHandler={upload} currentPath={currentPath} />
-            <UploadDir uploadDirHandler={uploadDir} currentPath={currentPath} />
+            <li><UploadFiles uploadHandler={this.uploadHandler} /></li>
+            <li><UploadDir uploadDirHandler={this.uploadDirHandler}/></li>
           </ul>
         </div>
       </div>
@@ -30,7 +44,6 @@ Functionbar.propTypes = {
   currentPath: PropTypes.string.isRequired,
   upload: PropTypes.func.isRequired,
   uploadDir: PropTypes.func.isRequired,
-  mkdir: PropTypes.func.isRequired
 }
 
 const mapStateToProps = state => ({
@@ -40,7 +53,6 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = dispatch => ({
   upload: path => dispatch(ajaxUpload(path)),
   uploadDir: path => dispatch(ajaxUploadDir(path)),
-  mkdir: (name, path) => dispatch(fetchMkdir(name, path))
 })
 
 export default connect(
