@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import Collapse from './Collapse'
 import View from './View'
+import { FormattedMessage } from 'react-intl'
 export default class Move extends Component {
   constructor(props){
     super(props);
@@ -26,10 +27,12 @@ export default class Move extends Component {
             <div className="modal-content">
               <div className="modal-header">
                 <button type="button" className="close" data-dismiss="modal">&times;</button>
-                <h4 className="modal-title">Move to</h4>
+                <h4 className="modal-title">
+                <FormattedMessage id="move_To" />
+                </h4>
               </div>
               <div className="modal-body">
-                <img className="view-icon" src={src} /><a data-toggle="collapse" href="#movehome" onClick={() => this.clickHandler(0, '/')}>Home</a>
+                <img className="view-icon" src={src} /><a data-toggle="collapse" href="#movehome" onClick={() => this.clickHandler(0, '/')}><FormattedMessage id="home" /></a>
                 <View folders={tree.home.children}
                       level={1} 
                       selected={selectedFolder}
@@ -37,8 +40,8 @@ export default class Move extends Component {
                       dist="movehome"/>
               </div>
               <div className="modal-footer">
-                <button type="button" className="btn btn-default" data-dismiss="modal">Close</button>
-                <button type="button" className="btn btn-primary" data-dismiss="modal" onClick={() => moveHandler(newPath)} >Move</button>
+                <button type="button" className="btn btn-default" data-dismiss="modal"><FormattedMessage id="close" /></button>
+                <button type="button" className="btn btn-primary" data-dismiss="modal" onClick={() => moveHandler(newPath)} ><FormattedMessage id="move" /></button>
               </div>
             </div>
           </div>

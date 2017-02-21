@@ -4,6 +4,7 @@ import merge from 'deepmerge'
 import getIconName from '../utils/getIconName'
 import Unshare from './Unshare'
 import ShareRecord from './ShareRecord'
+import { FormattedMessage } from 'react-intl'
 import { fetchShareRecords,
          selectShareRecords,
          selectAllShareRecords,
@@ -60,7 +61,7 @@ class Share extends Component {
     return (
       <div className="sharespace">
         <div className="displaybar">
-          <span> My Share</span>
+          <FormattedMessage id="my_Share" />
           <div className="toolbar">
           {show && <Unshare unshareHandler={this.unshareHandler}/>}
           </div>         
@@ -74,16 +75,20 @@ class Share extends Component {
                     <label></label>
                   </div>
                 </th>
-                <th width="40%">Name<a href="javascript:void(0)"
+                <th width="40%">
+                <FormattedMessage id="shared_File_Name" />
+                <a href="javascript:void(0)"
                   onClick={() => {sortByName(order); this.changeOrder(); }}>
                   <i className="fa fa-sort" aria-hidden="true"></i></a>
                 </th>
-                <th >Share At<a href="javascript:void(0)"
+                <th>
+                <FormattedMessage id="shared_At" />
+                <a href="javascript:void(0)"
                   onClick={() => {sortByTime(order); this.changeOrder(); }}>
                   <i className="fa fa-sort" aria-hidden="true"></i></a>
                 </th>
-                <th >Link</th>
-                <th>Secret</th>
+                <th><FormattedMessage id="shared_Link" /></th>
+                <th><FormattedMessage id="shared_Secret" /></th>
               </tr>
             </thead>
             <tbody>

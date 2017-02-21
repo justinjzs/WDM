@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import View from './View'
+import { FormattedMessage } from 'react-intl'
 export default class SaveTo extends Component {
   constructor(props){
     super(props);
@@ -22,17 +23,20 @@ export default class SaveTo extends Component {
     return (
       <div id="Save-div">
         <button type="button" className="btn btn-default btn-sm tool" data-toggle="modal" data-target="#Saveto">
-          <img src="/css/svg/moveto.svg" className="funcbarsvg" /> Save to
+          <img src="/css/svg/moveto.svg" className="funcbarsvg" />
+          <FormattedMessage id="save_To" />
         </button>
         <div id="Saveto" className="modal fade" ref="modal" role="Save to">
           <div className="modal-dialog modal-sm">
             <div className="modal-content">
               <div className="modal-header">
                 <button type="button" className="close" data-dismiss="modal">&times;</button>
-                <h4 className="modal-title">Save to</h4>
+                <h4 className="modal-title"><FormattedMessage id="save_To" /></h4>
               </div>
               <div className="modal-body">
-                <img className="view-icon" src={src} /><a data-toggle="collapse" href="#movehome" onClick={() => this.clickHandler(0, '/')}>Home</a>
+                <img className="view-icon" src={src} /><a data-toggle="collapse" href="#movehome" onClick={() => this.clickHandler(0, '/')}>
+                <FormattedMessage id="home" />
+                </a>
                 <View folders={tree.children}
                       level={1} 
                       selected={selectedFolder}
@@ -40,8 +44,8 @@ export default class SaveTo extends Component {
                       dist="movehome"/>
               </div>
               <div className="modal-footer">
-                <button type="button" className="btn btn-default" data-dismiss="modal">Close</button>
-                <button type="button" className="btn btn-primary" data-dismiss="modal" onClick={() => saveHandler(newPath)} >Save</button>
+                <button type="button" className="btn btn-default" data-dismiss="modal"><FormattedMessage id="close" /></button>
+                <button type="button" className="btn btn-primary" data-dismiss="modal" onClick={() => saveHandler(newPath)} ><FormattedMessage id="save" /></button>
               </div>
             </div>
           </div>

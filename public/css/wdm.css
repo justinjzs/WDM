@@ -134,7 +134,11 @@ input[type=file] {
   background-color: #fbfbfb;
 
 }
-
+.alert {
+  position: fixed;
+  right: 15px;
+  bottom: 0px;
+}
 .breadcrumb {
   display: inline-block;
   background-color: #fbfbfb;

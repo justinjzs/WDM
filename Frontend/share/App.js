@@ -15,6 +15,8 @@ import '../asset/css/share.css'
 class Share extends Component {
   componentWillMount() {
     this.props.auth();
+    let url = navigator.language;
+    fetch(`/language/${url}.json`).then(res => res.json())
   }
   render() {
     const { isAuthed, authWithSecret } = this.props;

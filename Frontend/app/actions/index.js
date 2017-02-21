@@ -17,6 +17,33 @@ export const SHARE_RECORDS_SELECT_ALL = 'SHARE_RECORDS_SELECT_ALL'
 export const SHARE_RECORDS_SORTBYNAME = 'SHARE_RECORDS_SORTBYNAME'
 export const SHARE_RECORDS_SORTBYTIME = 'SHARE_RECORDS_SORTBYTIME'
 export const USER_NAME = 'USER_NAME'
+export const MESSAGE_TIPS_SUCCESS = 'MESSAGE_TIPS_SUCCESS'
+export const MESSAGE_TIPS_INFO = 'MESSAGE_TIPS_INFO' 
+export const MESSAGE_TIPS_ERROR = 'MESSAGE_TIPS_ERROR'
+export const MESSAGE_TIPS_HIDE = 'MESSAGE_TIPS_HIDE'
+
+//message 
+export const hideMessage = () => ({
+  type: MESSAGE_TIPS_HIDE
+})
+
+export const showSuccessMessage = (text) => ({
+  type: MESSAGE_TIPS_SUCCESS,
+  text,
+  level: 'Success'
+})
+
+export const showInfoMessage = (text) => ({
+  type: MESSAGE_TIPS_INFO,
+  text,
+  level: 'Info'
+})
+
+export const showErrorMessage = (text) => ({
+  type: MESSAGE_TIPS_ERROR,
+  text,
+  level: 'Error'
+})
 
 //username
 export const getUserName = name => ({
@@ -215,6 +242,7 @@ export const ajaxUpload = path => dispatch => {
   xhr.onload = e => {
     if (xhr.status == 200) {
       dispatch(fetchCurrentFiles(path));
+      dispatch(showSuccessMessage('message_Upload_Success'));
     }
   }
   return xhr.send(formData);
@@ -233,6 +261,7 @@ export const ajaxUploadDir = path => dispatch => {
   xhr.onload = e => {
     if (xhr.status == 200) {
       dispatch(fetchCurrentFiles(path));
+      dispatch(showSuccessMessage('message_Upload_Success'));
     }
   }
   return xhr.send(formData);
@@ -265,6 +294,7 @@ export const fetchMkdir = (name, path) => dispatch => {
     .then(res => res.json())
     .then(json => dispatch(fetchCurrentFiles(path)))
     .then(() => dispatch(fetchAllFolders()))
+    .then(() => dispatch(showSuccessMessage('message_New_Success')))
     .catch(e => console.log(e.message));
 }
 
@@ -277,6 +307,7 @@ export const ajaxDelete = keys => dispatch => {
     if (xhr.status == 200) {
       dispatch(deleteFiles(keys));
       dispatch(fetchAllFolders());
+      dispatch(showSuccessMessage('message_Delete_Success'))
     }
   }
 
@@ -354,7 +385,8 @@ export const ajaxDownload = keys => dispatch => {
   xhr.responseType = "arraybuffer";
   xhr.onload = e => {
     if (xhr.status == 200) {
-      const name = xhr.getResponseHeader('Content-disposition').split('=').pop();
+      let name = xhr.getResponseHeader('Content-disposition').split('=').pop();
+      name = decodeURI(name);
       const type = xhr.getResponseHeader('Content-type');
       let blob = new Blob([xhr.response]);
       saveBlob(blob, name);
@@ -377,7 +409,7 @@ const saveBlob = (function () {
 } ());
 
 //search 
-export const fetchSearch = (name, path) => dispatch => {
+export const fetchSearch = (name, path = '/') => dispatch => {
   const query = `{
       entityByName(name: "${name}", path: "${path}") {
         key,
@@ -477,7 +509,8 @@ export const fetchUnshare = addrs => dispatch => {
   return fetch('/unshare', init)
     .then(res => res.json())
     .then(json => console.log(json))
-    .then(() => dispatch(fetchShareRecords()));
+    .then(() => dispatch(fetchShareRecords()))
+    .then(() => dispatch(showSuccessMessage('message_Unshare_Success')))
 }
 
 //get username

@@ -1,5 +1,6 @@
 import React, { Component, PropTypes } from 'react'
 import { connect } from 'react-redux'
+import { FormattedMessage } from 'react-intl'
 import {
   ajaxDownload,
   resetAddShare,
@@ -56,11 +57,12 @@ class Hoverbar extends Component {
         <div className="dropdown hover-more">
           <a href="#" className="dropdown-toggle" data-toggle="dropdown" onClick={e => e.stopPropagation()}><img className="hoversvg" src="/css/svg/more.svg" /></a>
           <ul className="dropdown-menu">
-            <li><a href="#" data-toggle="modal" data-target={`#hover-rename-${fileKey}`} >Rename</a>
-              
+            <li><a href="#" data-toggle="modal" data-target={`#hover-rename-${fileKey}`} >
+              <FormattedMessage id="rename" />
+            </a>
             </li>
-            <li><a href="#" onClick={e => this.deleteHandler()}>Delete</a></li>
-            <li><a href="#" data-toggle="modal" data-target={`#hover-move-${fileKey}`}>Move to</a></li>
+            <li><a href="#" data-toggle="modal" data-target={`#hover-move-${fileKey}`}><FormattedMessage id="share" /></a></li>
+            <li><a href="#" onClick={e => this.deleteHandler()}><FormattedMessage id="delete" /></a></li>
           </ul>
         </div>
         <Rename id={`hover-rename-${fileKey}`} name={name} renameHandler={this.renameHandler()} />

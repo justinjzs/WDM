@@ -1,6 +1,7 @@
 import React, { Component, PropTypes } from 'react'
 import merge from 'deepmerge'
 import { connect } from 'react-redux'
+import { FormattedMessage } from 'react-intl'
 import {
   fetchCurrentFiles,
   fetchMap,
@@ -57,7 +58,7 @@ class Workspace extends Component {
           <div className="toolbar">
             {!!num && <button type="button" className="btn btn-default btn-sm tool"
               onClick={() => this.downloadHandler()} >
-              <img src="/css/svg/download.svg" className="funcbarsvg" />Download</button>}
+              <img src="/css/svg/download.svg" className="funcbarsvg" /><FormattedMessage id="download" /></button>}
             {isLoggedin && !!num && <Save tree={tree} saveHandler={this.saveHandler()} />}
           </div>
         </div>
@@ -70,8 +71,8 @@ class Workspace extends Component {
                   <label></label>
                 </div>
               </th>
-              <th width="40%">Name</th>
-              <th>Size</th>
+              <th width="40%"><FormattedMessage id="file_Name" /></th>
+              <th><FormattedMessage id="file_Size" /></th>
             </tr>
           </thead>
           <tbody>

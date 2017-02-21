@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router'; 
-
+import { injectIntl, intlShape } from 'react-intl'
 
 const Breadcrumb = ({
   currentPath,
   map,
-  clickHandler
+  clickHandler,
+  intl
 }) => {
   let path = currentPath.match(/\d+/g);
   let folders = [];
@@ -21,7 +22,7 @@ const Breadcrumb = ({
   }
   folders.unshift({
     path: '/',
-    name: 'Home',
+    name: intl.formatMessage({id: 'home'}),
     active
   })
 
@@ -37,4 +38,8 @@ const Breadcrumb = ({
     </ul>
   )
 }
-export default Breadcrumb;
+
+Breadcrumb.propTypes = {
+  intl: intlShape.isRequired
+}
+export default injectIntl(Breadcrumb);

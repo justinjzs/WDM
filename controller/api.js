@@ -96,7 +96,7 @@ module.exports = {
     if (file.length === 1 && !file.isdir) { //单文件
       const { d_dir, name } = yield handle.handleDownload(this, file[0]);
       //发送
-      this.set('Content-disposition', 'attachment; filename=' + name);
+      this.set('Content-disposition', 'attachment; filename=' + encodeURI(name));
       this.set('Content-type', mime.lookup(name));
       this.body = fs.createReadStream(d_dir);
     } else if (!file.length) { //文件不存在

@@ -1,4 +1,9 @@
 
+//add Format function to Data prototype
+/**
+ * @param {String} fmt such like "yyyy-MM-dd hh:mm:ss"
+ * @returns {String} formated date
+ */
 export default function addFormat() {
   Date.prototype.Format = function (fmt) {
     var o = {

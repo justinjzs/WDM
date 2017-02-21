@@ -3,7 +3,12 @@ import { connect } from 'react-redux'
 import New from './New'
 import UploadFiles from './UploadFiles'
 import UploadDir from './UploadDir'
-import { fetchCurrentFiles, ajaxUpload, ajaxUploadDir } from '../actions'
+import { FormattedMessage } from 'react-intl'
+import { 
+  fetchCurrentFiles, 
+  ajaxUpload, 
+  ajaxUploadDir
+ } from '../actions'
 
 class Functionbar extends Component {
   constructor(props) {
@@ -21,20 +26,20 @@ class Functionbar extends Component {
   }
   render() {
     return (
-
       <div className="functionbar">
         <button type="button" id="new" className="btn btn-default btn-sm" data-toggle="modal" data-target="#newFolder">
-          <img src="/css/svg/new.svg" className="funcbarsvg" />New
+          <img src="/css/svg/new.svg" className="funcbarsvg" /><FormattedMessage id="new" />
         </button>
         <div className="dropdown" id="upload-dropdown">
           <button type="button" id="upload" className="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
-            <img src="/css/svg/upload.svg" className="funcbarsvg" />Upload <span className="caret"></span>
+            <img src="/css/svg/upload.svg" className="funcbarsvg" /><FormattedMessage id="upload" /> <span className="caret"></span>
           </button>
           <ul className="dropdown-menu">
             <li><UploadFiles uploadHandler={this.uploadHandler} /></li>
             <li><UploadDir uploadDirHandler={this.uploadDirHandler}/></li>
           </ul>
         </div>
+        
       </div>
     );
   }
@@ -43,7 +48,7 @@ class Functionbar extends Component {
 Functionbar.propTypes = {
   currentPath: PropTypes.string.isRequired,
   upload: PropTypes.func.isRequired,
-  uploadDir: PropTypes.func.isRequired,
+  uploadDir: PropTypes.func.isRequired
 }
 
 const mapStateToProps = state => ({
@@ -52,7 +57,7 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => ({
   upload: path => dispatch(ajaxUpload(path)),
-  uploadDir: path => dispatch(ajaxUploadDir(path)),
+  uploadDir: path => dispatch(ajaxUploadDir(path))
 })
 
 export default connect(

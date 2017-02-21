@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import Breadcrumb from './Breadcrumb'
 import Toolbar from './Toolbar'
+import { FormattedMessage } from 'react-intl'
 
 export default class Displaybar extends Component {
 
@@ -19,7 +20,7 @@ export default class Displaybar extends Component {
     return (
       <div className="displaybar">
       {isSearch ? 
-        <span>Search Result</span> : 
+        <FormattedMessage id="search_Result" /> : 
         <Breadcrumb currentPath={currentPath} map={map} clickHandler={loadFilesHandler} />}
       {!!count && <Toolbar show={count > 1} name={renameFile.name} />}
       </div>

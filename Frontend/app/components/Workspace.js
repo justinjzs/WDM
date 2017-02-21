@@ -7,7 +7,9 @@ import getIconName from '../utils/getIconName'
 import formatBytes from '../utils/formatBytes'
 import UploadFiles from './UploadFiles'
 import UploadDir from './UploadDir'
+import Message from './Message'
 import New from './New'
+import { FormattedMessage } from 'react-intl'
 import {
   fetchCurrentFiles,
   fetchMkdir,
@@ -16,7 +18,8 @@ import {
   sortByName,
   sortBySize,
   sortByLastTime,
-  sortByCreateTime
+  sortByCreateTime,
+  hideMessage
 } from '../actions'
 import merge from 'deepmerge'
 
@@ -56,7 +59,10 @@ class Workspace extends Component {
       sortByName,
       sortBySize,
       sortByLastTime,
-      sortByCreateTime } = this.props;
+      sortByCreateTime,
+      hideHandler,
+      message
+ } = this.props;
 
     return (
       <div className="table-responsive workspace">
@@ -70,19 +76,27 @@ class Workspace extends Component {
                   <label></label>
                 </div>
               </th>
-              <th width="50%">Name<a href="javascript:void(0)"
+              <th width="50%">
+              <FormattedMessage id="file_Name" />
+              <a href="javascript:void(0)"
                 onClick={() => { sortByName(order); this.changeOrder(); } }>
                 <i className="fa fa-sort" aria-hidden="true"></i></a>
               </th>
-              <th >Size<a href="javascript:void(0)"
+              <th >
+              <FormattedMessage id="file_Size" />
+              <a href="javascript:void(0)"
                 onClick={() => { sortBySize(order); this.changeOrder(); } }>
                 <i className="fa fa-sort" aria-hidden="true"></i></a>
               </th>
-              <th >LastModified<a href="javascript:void(0)"
+              <th >
+              <FormattedMessage id="file_LastModified" />
+              <a href="javascript:void(0)"
                 onClick={() => { sortByLastTime(order); this.changeOrder(); } }>
                 <i className="fa fa-sort" aria-hidden="true"></i></a>
               </th>
-              <th>CreateTime<a href="javascript:void(0)"
+              <th>
+              <FormattedMessage id="file_CreateTime" />
+              <a href="javascript:void(0)"
                 onClick={() => { sortByCreateTime(order); this.changeOrder(); } }>
                 <i className="fa fa-sort" aria-hidden="true"></i></a>
               </th>
@@ -103,17 +117,18 @@ class Workspace extends Component {
           </tbody>
         </table>
         <ContextMenuTrigger attributes={{ className: 'under-table' }} id="under-table">
+        {message.show && <Message message={message} hideHandler={hideHandler} />}
         </ContextMenuTrigger>
         <ContextMenu id="under-table" >
           <MenuItem>
-            <span data-toggle="modal" data-target="#newFolder">New Folder</span>
+            <span data-toggle="modal" data-target="#newFolder"><FormattedMessage id="new_Folder" /></span>
           </MenuItem>
           <MenuItem onClick={() => $('#upload-files').click()}>
-            <span>Upload Files </span>
+            <FormattedMessage id="upload_Files" />
           </MenuItem>
           <MenuItem divider />
           <MenuItem onClick={() => $('#upload-dir').click()}>
-            <span>Upload Folder </span>
+            <FormattedMessage id="upload_Folder" />
           </MenuItem>
         </ContextMenu>
         <New mkdirHandler={this.mkdirHandler()} />
@@ -135,14 +150,17 @@ Workspace.propTypes = {
   sortBySize: PropTypes.func.isRequired,
   sortByLastTime: PropTypes.func.isRequired,
   sortByCreateTime: PropTypes.func.isRequired,
-  mkdir: PropTypes.func.isRequired
+  mkdir: PropTypes.func.isRequired,
+  hideHandler: PropTypes.func.isRequired,
+  message: PropTypes.object.isRequired
 };
 
 const mapStateToProps = state => ({
   currentFiles: merge({}, state.workspace.currentFiles, { clone: true }),
   currentPath: state.workspace.currentPath,
   map: merge({}, state.tree.map, { clone: true }),
-  isSearch: state.workspace.isSearch
+  isSearch: state.workspace.isSearch,
+  message: merge({}, state.message, {clone: true})
 })
 
 const mapDispatchToProps = dispatch => ({
@@ -153,7 +171,8 @@ const mapDispatchToProps = dispatch => ({
   sortBySize: order => dispatch(sortBySize(order)),
   sortByLastTime: order => dispatch(sortByLastTime(order)),
   sortByCreateTime: order => dispatch(sortByCreateTime(order)),
-  mkdir: path => name => dispatch(fetchMkdir(name, path))
+  mkdir: path => name => dispatch(fetchMkdir(name, path)),
+  hideHandler: () => dispatch(hideMessage())
 })
 
 export default connect(

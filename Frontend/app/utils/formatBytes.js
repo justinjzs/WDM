@@ -1,3 +1,8 @@
+/**
+ * @param {Number} bytes
+ * @param {Number} decimals (default to 3)  0~20
+ * @returns {String} fomated bytes
+ */
 export default function formatBytes(bytes, decimals = 3) {
   if (!bytes)
     return bytes;

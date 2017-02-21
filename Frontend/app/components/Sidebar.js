@@ -5,6 +5,7 @@ import merge from 'deepmerge'
 import { fetchAllFolders, 
          fetchCurrentFiles } from '../actions'
 import Collapse from './Collapse';
+import { FormattedMessage } from 'react-intl'
 
 class Sidebar extends Component {
   componentWillMount() {
@@ -23,13 +24,13 @@ class Sidebar extends Component {
 
           <ul id="menu-content" className="menu-content collapse out">
             <Link to="/home"><li  data-toggle="collapse" data-target="#home" onDoubleClick={e => this.props.loadFilesHandler()} className="collapsed">
-              <img src={src} className="sidebar-icon"/><span> Home </span><span className="arrow"></span>
+              <img src={src} className="sidebar-icon"/><FormattedMessage id="home" /><span className="arrow"></span>
             </li></Link>
             <ul id="home" className="collapse">
               <Collapse level={1} currentFolder={key} dClickHandler={this.props.loadFilesHandler} folders={this.props.tree.home.children} />
             </ul>
             <Link to="/home/share"><li>
-              <img src="/css/svg/share_white.svg" className="sidebar-icon" /> <span>My Share</span>
+              <img src="/css/svg/share_white.svg" className="sidebar-icon" /> <FormattedMessage id="my_Share" />
             </li></Link>
           </ul>
         </div>

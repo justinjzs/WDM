@@ -1,6 +1,7 @@
 import React, { Component, PropTypes } from 'react'
 import { connect } from 'react-redux'
 import { ContextMenu, MenuItem } from 'react-contextmenu'
+import { FormattedMessage } from 'react-intl'
 import {
   ajaxDownload,
   resetAddShare,
@@ -40,20 +41,26 @@ class RowContextMenu extends Component {
     return (
       <ContextMenu id={id}>
         <MenuItem >
-          <span data-toggle="modal" data-target={`#hover-share-${fileKey}`} >Share</span>
+          <span data-toggle="modal" data-target={`#hover-share-${fileKey}`} >
+            <FormattedMessage id="share" />
+          </span>
         </MenuItem >
         <MenuItem onClick={this.downloadHandler}>
-          <span >Download</span>
+          <FormattedMessage id="download" />
         </MenuItem>
         <MenuItem>
-          <span data-toggle="modal" data-target={`#hover-move-${fileKey}`} >Move to</span>
+          <span data-toggle="modal" data-target={`#hover-move-${fileKey}`} >
+            <FormattedMessage id="move_To" />
+          </span>
         </MenuItem>
         <MenuItem>
-          <span data-toggle="modal" data-target={`#hover-rename-${fileKey}`} >Rename</span>
+          <span data-toggle="modal" data-target={`#hover-rename-${fileKey}`} >
+            <FormattedMessage id="rename" />
+          </span>
         </MenuItem>
         <MenuItem divider />
         <MenuItem onClick={e => this.deleteHandler()} >
-          <span>Delete</span>
+          <FormattedMessage id="delete" />
         </MenuItem>
       </ContextMenu>
     )
