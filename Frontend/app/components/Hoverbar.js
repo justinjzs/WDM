@@ -48,21 +48,30 @@ class Hoverbar extends Component {
     const {fileKey, addShareLink, resetAddShare, name, tree} = this.props;
     return (
       <div className="hoverbar">
-        <a href="#" data-toggle="modal" data-target={`#hover-share-${fileKey}`} ><img className="hoversvg" src="/css/svg/share_blue.svg" /></a>
+        <a href="#" data-toggle="modal" data-target={`#hover-share-${fileKey}`} >
+        <span className="icon-share hover-icon blue-icon"></span></a>
         <AddShare id={`hover-share-${fileKey}`}
           addShareHandler={this.addShareHandler()}
           resetHandler={resetAddShare}
           addShareLink={addShareLink} />
-        <img className="hoversvg" src="/css/svg/download_blue.svg" onClick={this.downloadHandler} />
+
+        <span className="icon-download hover-icon blue-icon" onClick={this.downloadHandler}></span>
         <div className="dropdown hover-more">
-          <a href="#" className="dropdown-toggle" data-toggle="dropdown" onClick={e => e.stopPropagation()}><img className="hoversvg" src="/css/svg/more.svg" /></a>
+          <a href="#" className="dropdown-toggle" data-toggle="dropdown" onClick={e => e.stopPropagation()}>
+          <span className="icon-more hover-icon blue-icon"></span></a>
           <ul className="dropdown-menu">
             <li><a href="#" data-toggle="modal" data-target={`#hover-rename-${fileKey}`} >
+              <span className="icon-rename  blue-icon"></span>
               <FormattedMessage id="rename" />
             </a>
             </li>
-            <li><a href="#" data-toggle="modal" data-target={`#hover-move-${fileKey}`}><FormattedMessage id="share" /></a></li>
-            <li><a href="#" onClick={e => this.deleteHandler()}><FormattedMessage id="delete" /></a></li>
+            <li><a href="#" data-toggle="modal" data-target={`#hover-move-${fileKey}`}>
+              <span className="icon-moveto blue-icon"></span><FormattedMessage id="move_To" />
+            </a></li>
+            <li><a href="#" onClick={e => this.deleteHandler()}>
+            <span className="icon-delete blue-icon"></span>
+              <FormattedMessage id="delete" />
+            </a></li>
           </ul>
         </div>
         <Rename id={`hover-rename-${fileKey}`} name={name} renameHandler={this.renameHandler()} />

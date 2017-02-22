@@ -42,24 +42,29 @@ class RowContextMenu extends Component {
       <ContextMenu id={id}>
         <MenuItem >
           <span data-toggle="modal" data-target={`#hover-share-${fileKey}`} >
+          <span className="icon-share blue-icon"></span>
             <FormattedMessage id="share" />
           </span>
         </MenuItem >
         <MenuItem onClick={this.downloadHandler}>
+        <span className="icon-download blue-icon"></span>
           <FormattedMessage id="download" />
         </MenuItem>
         <MenuItem>
           <span data-toggle="modal" data-target={`#hover-move-${fileKey}`} >
+          <span className="icon-moveto blue-icon"></span>
             <FormattedMessage id="move_To" />
           </span>
         </MenuItem>
         <MenuItem>
           <span data-toggle="modal" data-target={`#hover-rename-${fileKey}`} >
+          <span className="icon-rename blue-icon"></span>
             <FormattedMessage id="rename" />
           </span>
         </MenuItem>
         <MenuItem divider />
         <MenuItem onClick={e => this.deleteHandler()} >
+        <span className="icon-delete blue-icon"></span>
           <FormattedMessage id="delete" />
         </MenuItem>
       </ContextMenu>

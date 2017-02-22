@@ -9,7 +9,7 @@ class Header extends Component {
     super(props);
     this.state = {
       inputText: '',
-      searchText: props.intl.formatMessage({id: 'search_All_files'})
+      searchText: props.intl.formatMessage({ id: 'search_All_files' })
     }
     this.inputHandler = this.inputHandler.bind(this);
     this.rangeHandler = this.rangeHandler.bind(this);
@@ -31,51 +31,73 @@ class Header extends Component {
   searchHandler() {
     const { search, currentPath, intl } = this.props;
     const { inputText, searchText } = this.state;
-    let searchPath = searchText === intl.formatMessage({id: 'search_This_Folder'}) ? currentPath : undefined;
+    let searchPath = searchText === intl.formatMessage({ id: 'search_This_Folder' }) ? currentPath : undefined;
     search(inputText, searchPath);
   }
   render() {
     const { currentPath, userName, intl } = this.props;
-    const { inputText } = this.state;
+    const { inputText, searchText } = this.state;
     const toUrl = `/home/search/${inputText}`;
     return (
-      <nav className="header navbar navbar-inverse">
-        <div className="container-fluid">
-          <div className="navbar-header">
-            <img src="/css/svg/wdm.svg" className="logo" /><span id="description" >
+      <nav className="navbar navbar-default header" role="navigation">
+        <div className="navbar-header col-sm-2">
+          <button type="button" className="navbar-toggle" data-toggle="collapse" data-target="#max-768">
+            <span className="sr-only">Toggle navigation</span>
+            <span className="icon-bar"></span>
+            <span className="icon-bar"></span>
+            <span className="icon-bar"></span>
+          </button>
+          <div className="logo">
+            <span>
+              <img src="/css/svg/wdm.svg" />
+            </span>
+            <div className="description" >
               <FormattedMessage id='app_Description'
                 description='description the app' />
-            </span>
-          </div>
-          <div className="input-group nav navbar-nav">
-            <div className="input-group-btn search-panel">
-              <button type="button" className="btn btn-default dropdown-toggle" id="filter" data-toggle="dropdown">
-                <span id="search_concept">{this.state.searchText}</span> <span className="caret"></span>
-              </button>
-              <ul className="dropdown-menu" role="menu">
-                <li><a href="javascript:void(0)" onClick={() => this.rangeHandler(intl.formatMessage({id: 'search_This_Folder'}))}>
-                  <FormattedMessage id='search_This_Folder' /></a></li>
-                <li><a href="javascript:void(0)" onClick={() => this.rangeHandler(intl.formatMessage({id: 'search_All_files'}))}>
-                  <FormattedMessage id='search_All_files' /></a></li>
-              </ul>
             </div>
-            <input type="text" className="form-control" id="search" value={inputText} onChange={this.inputHandler} placeholder={intl.formatMessage({id: 'search_Input_Placeholder'})} />
-            <span className="input-group-btn">
-              <Link to="/home/search"><button className="btn btn-default" type="button" id="submit" onClick={() => this.searchHandler()} ><img src="/css/svg/search.svg" /></button></Link>
-            </span>
           </div>
+        </div>
+
+        <div className="collapse navbar-collapse row" id="max-768">
+          <div className="nav navbar-nav col-sm-6">
+            <div className="input-group navbar-form">
+              <div className="input-group-btn">
+                <button type="button" className="btn btn-default  dropdown-toggle" id="filter" data-toggle="dropdown">
+                  <span id="search_concept">{searchText}</span> <span className="caret"></span>
+                </button>
+                <ul className="dropdown-menu" role="menu">
+                  <li><a href="javascript:void(0)" onClick={() => this.rangeHandler(intl.formatMessage({ id: 'search_This_Folder' }))}>
+                    <FormattedMessage id='search_This_Folder' /></a></li>
+                  <li><a href="javascript:void(0)" onClick={() => this.rangeHandler(intl.formatMessage({ id: 'search_All_files' }))}>
+                    <FormattedMessage id='search_All_files' /></a></li>
+                </ul>
+              </div>
+              <input type="text" className="form-control" id="search" value={inputText} onChange={this.inputHandler} placeholder={intl.formatMessage({ id: 'search_Input_Placeholder' })} />
+              <div className="input-group-btn">
+                <button className="btn btn-default" type="button" id="submit" onClick={() => this.searchHandler()} ><Link to="/home/search"><img src="/css/svg/search.svg" /></Link></button>
+              </div>
+            </div>
+          </div>
+
           <ul className="nav navbar-nav navbar-right">
-            <li><a href="#"><img src="/css/svg/user.svg" />
-              <FormattedMessage id='greeting'
-                description='Greeting to the user'
-                values={{ userName: <b>{userName}</b> }} /></a></li>
-            <li><a href="/logout"><span className="fa fa-sign-out fa-2x"></span><FormattedMessage id='log_Out' /></a></li>
+            <li className="dropdown">
+              <a href="#" className="dropdown-toggle" data-toggle="dropdown" >
+                <img src="/css/svg/user.svg " />
+                <FormattedMessage id='greeting'
+                  description='Greeting to the user'
+                  values={{ userName: <b>{userName}</b> }} /></a>
+                <ul className="dropdown-menu" role="user menu">
+                  <li><a href="/logout">Lou out</a></li>
+                </ul>
+              </li>
           </ul>
         </div>
       </nav>
+
     );
   }
 }
+
 
 Header.propTypes = {
   currentPath: PropTypes.string.isRequired,
@@ -99,3 +121,6 @@ export default connect(
   mapStateToProps,
   mapDispatchToProps
 )(injectIntl(Header))
+
+
+

@@ -61,7 +61,7 @@ class Share extends Component {
     return (
       <div className="sharespace">
         <div className="displaybar">
-          <FormattedMessage id="my_Share" />
+          <span id="my-share"><FormattedMessage id="my_Share" /></span>
           <div className="toolbar">
           {show && <Unshare unshareHandler={this.unshareHandler}/>}
           </div>         

@@ -20,7 +20,7 @@ export default class Displaybar extends Component {
     return (
       <div className="displaybar">
       {isSearch ? 
-        <FormattedMessage id="search_Result" /> : 
+        <span id="search-result"><FormattedMessage id="search_Result" /></span> : 
         <Breadcrumb currentPath={currentPath} map={map} clickHandler={loadFilesHandler} />}
       {!!count && <Toolbar show={count > 1} name={renameFile.name} />}
       </div>

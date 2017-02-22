@@ -1,27 +1,49 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
-  <title>Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/libs/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/libs/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/libs/theme.css">
+  <link rel="stylesheet" href="/css/login.css">
+  <script type="text/javascript" src="/js/jquery-3.1.1.min.js"></script>
+  <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  <title>Log in</title>
 </head>
+
 <body>
-  <form action="/login" method="post">
-    <p>
-      <label>Username:
-        <input type="text" name="username" value="test" />
-      </label>
-    </p>
-    <p>
-      <label>Password:
-        <input type="password" name="password" value="test" />
-      </label>
-    </p>
-    <p>
-      <button type="submit">Log In</button>
-    </p>
-    <p>
-      <a href="/auth/github">Sign in with Github</a><a href="/auth/google">Sign in with Google</a>
-    </p>
-  </form>
+
+  <div class="container">
+    <div class="wrapper">
+      <form action="/login" method="post" name="Login_Form" class="form-signin">
+        <h3 class="form-signin-heading">Welcome Back! Please Sign In</h3>
+        <hr class="colorgraph"><br>
+
+        <input type="text" class="form-control" name="username" placeholder="Username" value="test" required="" autofocus="" />
+        <input type="password" class="form-control" name="password" value="test" placeholder="Password" required="" />
+
+        <button class="btn btn-lg btn-primary btn-block" name="Submit" value="Login" type="Submit">Login</button>
+        <p class="text-center" style="margin-top:10px;"> OR</p>
+        <a href="/auth/github" class="btn btn-default btn-block">
+          <i class="fa fa-github fa-2x" aria-hidden="true"> </i>
+          <span>Log in with Github</span>
+        </a>
+        <a href="/auth/google" class="btn btn-default btn-block">
+          <i class="fa fa-google fa-2x" aria-hidden="true"> </i>
+          <span>Log in with Google</span>
+        </a>
+        <br>
+        <p class="text-center">
+          <a href="/signup">Register for an account? </a>
+        </p>
+      </form>
+    </div>
+
+  </div>
+
+
 </body>
+
 </html>

@@ -9,7 +9,7 @@ passport.serializeUser(function(user, done) {
 })
 //session ----> data
 passport.deserializeUser(function(u_id, done) {
-  query( `select u_id, u_name from users where u_id = $1`,
+  query( `select * from users where u_id = $1`,
     [u_id],
     (err, result) => {
       if (err) { //数据库错误

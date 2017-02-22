@@ -340,6 +340,7 @@ export const fetchRename = (key, name, currentPath) => dispatch => {
   return fetch('/graphql', init)
     .then(res => res.json())
     .then(json => dispatch(fetchCurrentFiles(currentPath)))
+    .then(() => dispatch(showSuccessMessage('message_Rename_Success')))
     .catch(e => console.log(e.message));
 }
 //move to
@@ -371,6 +372,7 @@ export const fetchMove = (keys, prePath, newPath) => dispatch => {
   return fetch('/graphql', init)
     .then(res => res.json())
     .then(json => dispatch(fetchCurrentFiles(prePath)))
+    .then(() => dispatch(showSuccessMessage('message_Move_Success')))
     .catch(e => console.log(e.message));
 }
 
@@ -460,7 +462,8 @@ export const fetchAddShare = (keys, isSecret) => dispatch => {
   }
   return fetch('./addshare', init)
     .then(res => res.json())
-    .then(json => dispatch(addShare(json.addr, json.secret)));
+    .then(json => dispatch(addShare(json.addr, json.secret)))
+    .then(() => dispatch(showSuccessMessage('message_Addshare_Success')))
 }
 //获取分享记录
 export const fetchShareRecords = () => dispatch => {

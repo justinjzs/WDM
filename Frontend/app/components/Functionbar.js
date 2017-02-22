@@ -4,11 +4,11 @@ import New from './New'
 import UploadFiles from './UploadFiles'
 import UploadDir from './UploadDir'
 import { FormattedMessage } from 'react-intl'
-import { 
-  fetchCurrentFiles, 
-  ajaxUpload, 
+import {
+  fetchCurrentFiles,
+  ajaxUpload,
   ajaxUploadDir
- } from '../actions'
+} from '../actions'
 
 class Functionbar extends Component {
   constructor(props) {
@@ -28,18 +28,24 @@ class Functionbar extends Component {
     return (
       <div className="functionbar">
         <button type="button" id="new" className="btn btn-default btn-sm" data-toggle="modal" data-target="#newFolder">
-          <img src="/css/svg/new.svg" className="funcbarsvg" /><FormattedMessage id="new" />
+          <div className="in-functionbar">
+            <span className="icon-new white-icon"> </span>
+            <FormattedMessage id="new" />
+          </div>
         </button>
         <div className="dropdown" id="upload-dropdown">
           <button type="button" id="upload" className="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
-            <img src="/css/svg/upload.svg" className="funcbarsvg" /><FormattedMessage id="upload" /> <span className="caret"></span>
+            <div className="in-functionbar">
+              <span className="icon-upload"> </span>
+              <FormattedMessage id="upload" /> <span className="caret"></span>
+            </div>
           </button>
           <ul className="dropdown-menu">
             <li><UploadFiles uploadHandler={this.uploadHandler} /></li>
-            <li><UploadDir uploadDirHandler={this.uploadDirHandler}/></li>
+            <li><UploadDir uploadDirHandler={this.uploadDirHandler} /></li>
           </ul>
         </div>
-        
+
       </div>
     );
   }

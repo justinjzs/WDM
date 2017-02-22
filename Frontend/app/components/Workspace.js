@@ -5,8 +5,6 @@ import { connect } from 'react-redux'
 import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
 import getIconName from '../utils/getIconName'
 import formatBytes from '../utils/formatBytes'
-import UploadFiles from './UploadFiles'
-import UploadDir from './UploadDir'
 import Message from './Message'
 import New from './New'
 import { FormattedMessage } from 'react-intl'
@@ -65,7 +63,7 @@ class Workspace extends Component {
  } = this.props;
 
     return (
-      <div className="table-responsive workspace">
+      <ContextMenuTrigger attributes={{ className: 'table-responsive workspace' }} id="under-table">
         <Displaybar {...this.props} />
         <table className="table table-hover" >
           <thead>
@@ -116,23 +114,27 @@ class Workspace extends Component {
             })}
           </tbody>
         </table>
-        <ContextMenuTrigger attributes={{ className: 'under-table' }} id="under-table">
+
         {message.show && <Message message={message} hideHandler={hideHandler} />}
-        </ContextMenuTrigger>
+        
         <ContextMenu id="under-table" >
           <MenuItem>
-            <span data-toggle="modal" data-target="#newFolder"><FormattedMessage id="new_Folder" /></span>
+            <span data-toggle="modal" data-target="#newFolder">
+            <span className="icon-new blue-icon"></span>
+            <FormattedMessage id="new_Folder" /></span>
           </MenuItem>
           <MenuItem onClick={() => $('#upload-files').click()}>
+          <span className="icon-upload blue-icon"></span>
             <FormattedMessage id="upload_Files" />
           </MenuItem>
           <MenuItem divider />
           <MenuItem onClick={() => $('#upload-dir').click()}>
+          <span className="icon-uploadfolder blue-icon"></span>
             <FormattedMessage id="upload_Folder" />
           </MenuItem>
         </ContextMenu>
         <New mkdirHandler={this.mkdirHandler()} />
-      </div>
+      </ContextMenuTrigger>
     );
   }
 }

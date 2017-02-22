@@ -135,7 +135,8 @@ const QueryType = new GraphQLObjectType({
     userInfo: {
       type: GraphQLString,
       description: 'get user info',
-      resolve: (root, args, ctx) => ctx.req.user.u_name
+      resolve: (root, args, { req: { user } }) => 
+        user.u_name || user.u_gitname || user.u_googlename 
     }
   })
 }) 

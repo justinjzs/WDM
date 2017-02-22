@@ -11,7 +11,7 @@ export default class UploadDir extends Component {
     return (
       <label id="upload-dir" htmlFor="dir">
         <input id='dir' type="file" name='dir' ref={e => this.input = e} onChange={() => uploadDirHandler()} />
-        <i className="fa fa-folder" aria-hidden="true"><FormattedMessage id="upload_Folder" /></i>
+        <span className="icon-uploadfolder green-icon in-label"></span><span className="in-label"><FormattedMessage id="upload_Folder" /></span>
       </label>
     )
   }
