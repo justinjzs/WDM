@@ -2,15 +2,13 @@ import React, { Component, PropTypes } from 'react'
 import { connect } from 'react-redux'
 import merge from 'deepmerge'
 import getIconName from '../utils/getIconName'
-import Unshare from './Unshare'
 import ShareRecord from './ShareRecord'
 import { FormattedMessage } from 'react-intl'
 import { fetchShareRecords,
          selectShareRecords,
          selectAllShareRecords,
          sortShareRecordsByName,
-         sortShareRecordsByTime,
-         fetchUnshare } from '../actions'
+         sortShareRecordsByTime } from '../actions'
 
 class Share extends Component {
   constructor(props) {
@@ -19,7 +17,6 @@ class Share extends Component {
       order: false
     }
     this.changeOrder = this.changeOrder.bind(this);
-    this.unshareHandler = this.unshareHandler.bind(this);
   }
   componentWillMount(){
     this.props.loadShareRecords();
@@ -29,15 +26,7 @@ class Share extends Component {
       order: !this.state.order
     })
   }
-  unshareHandler() {
-    const { unshare, list } = this.props;
-    let array = [];
-    for (let item of list) {
-      if (item.selected)
-        array.push(item.addr);
-    }
-    unshare(array);
-  }
+
   checkHandler(addr) {
     for (let item of this.props.list) {
       if (item.addr === addr)
@@ -60,12 +49,6 @@ class Share extends Component {
     }
     return (
       <div className="sharespace">
-        <div className="displaybar">
-          <span id="my-share"><FormattedMessage id="my_Share" /></span>
-          <div className="toolbar">
-          {show && <Unshare unshareHandler={this.unshareHandler}/>}
-          </div>         
-        </div>
           <table className="table table-hover" >
             <thead>
               <tr>
@@ -109,8 +92,7 @@ Share.propTypes = {
   checkHandler: PropTypes.func.isRequired,
   checkAllHandler: PropTypes.func.isRequired,
   sortByName: PropTypes.func.isRequired,
-  sortByTime: PropTypes.func.isRequired,
-  unshare: PropTypes.func.isRequired
+  sortByTime: PropTypes.func.isRequired
 }
 
 const mapStateToProps = state => ({
@@ -122,8 +104,7 @@ const mapDispatchToProps = dispatch => ({
   checkHandler: addr => dispatch(selectShareRecords(addr)),
   checkAllHandler: () => dispatch(selectAllShareRecords()),
   sortByName: order => dispatch(sortShareRecordsByName(order)),
-  sortByTime: order => dispatch(sortShareRecordsByTime(order)),
-  unshare: addrs => dispatch(fetchUnshare(addrs))
+  sortByTime: order => dispatch(sortShareRecordsByTime(order))
 })
 
 export default connect(

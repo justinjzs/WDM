@@ -57,54 +57,14 @@
 
 }
 
-/*
-.logo{
-  height: 30px;
-  width: 112px;
-  margin-top: 17px;
-  margin-bottom: 17px;
-}
-#description {
-  position: relative;
-  top: 12px;
-  left: 5px;
-  font-size: small;
-}
-*/
-/*
-.input-group {
-  width: 388px;
-  height: 40px;
-  margin: 14px 0px 14px 40px;;
-  border-color: #c7c7c7;
-  padding: 0px ;
+.nav-side-menu,
+.workspace{
+	-webkit-transition: margin 200ms ease-out;
+	-moz-transition: margin 200ms ease-out;
+	-o-transition: margin 200ms ease-out;
+	transition: margin 200ms ease-out;
+	}
 
-}
-
-#filter {
-  height: 40px;
-  background-color: #fbfbfb;
-  border-color: #c7c7c7;
-}
-
-.caret {
-  position: relative;
-  left: 4px;
-}
-#search {
-  height: 40px;
-  border-right: 0px;
-  border-color: #c7c7c7;
-  border-color: #c7c7c7;
-}
-
-#submit {
-  height: 40px;
-  border-left: 0px;
-  background-color: white;
-  border-color: #c7c7c7;
-}
-*/
 #unshare-div {
   display: inline;
 }
@@ -126,6 +86,19 @@
   font-size: 15px;
   font-family: Verdana;
 }
+.addshare-modal button {
+  margin: 0px 12px;
+}
+.addshare-modal .modal-body>div{
+  line-height: 50px;
+}
+.functionbar {
+  height: 60px;
+  background-color: #fbfbfb;
+}
+.new-upload {
+  width: 240px;
+}
 #new {
   font-family: Verdana;
   color: white;
@@ -140,14 +113,13 @@
 }
 
 #upload {
-  width: 112px;
   height: 28px;
   line-height: 16px;
   font-family: Verdana;
   color: green;
   border-color: #5a8130;
   background-color: white;
-  margin: 16px 9px 16px 0px;
+  margin: 16px 0px;
 }
 .funcbarsvg {
   margin-right: 3px; 
@@ -180,12 +152,7 @@ input[type=file] {
   display: none;
 }
 
-.functionbar {
-  width: 220px;
-  height: 60px;
-  background-color: #fbfbfb;
 
-}
 .alert {
   position: fixed;
   right: 15px;
@@ -205,6 +172,7 @@ input[type=file] {
   font-weight: 300;
 }
 .displaybar {
+  display: inline-block;
   height: 60px;
   background-color: #fbfbfb;
 
@@ -220,11 +188,7 @@ input[type=file] {
 .workspace {
   overflow: auto;
   border-width: 0px;
-  position: absolute;
-  left: 220px;
-  right: 0px;
-  bottom: 0px;
-  top: 70px;
+  height: 100%
 }
 .react-contextmenu-item span {
 margin-right: 8px;
@@ -307,21 +271,44 @@ tr {
 
 .sidebar-icon {
   box-sizing: content-box;
-  width: 20px;
-  height: 20px;
-  padding: 0px 10px;
+  float: right;
+  width: auto;
+  height: 21px;
+  margin-top: 12px;
+  padding: 0px 9px;
 }
-
+@media (max-width: 1024px) {
+  .nav-side-menu {
+    margin-left: -190px;
+  }
+  .nav-side-menu ul li {
+    border-bottom: 1px #e5e5e5 solid;
+  }
+  .nav-side-menu a:first-child li {
+    border-top: 1px #e5e5e5 solid;
+  }
+}
+.nav-side-menu:hover {
+  margin-left: 0px;
+}
+.nav-side-menu:hover ul li {
+  border-top-width: 0px;
+  border-bottom-width: 0px;
+}
 .nav-side-menu {
   overflow: auto;
   font-family: verdana;
   font-size: 12px;
   font-weight: 200;
   background-color: #3b4547;
-  position: absolute;
-  width: 220px;
+  width: 240px;
+  padding-right: 0px;
   height: 100%;
   color: #e1ffff;
+}
+.sidebar-description {
+  margin-left: 10px;
+  font-size: 14px;
 }
 .nav-side-menu a li span {
   color: white;
@@ -549,7 +536,7 @@ tr {
 .blue-icon {
   color: #3698B3;
 }
-.functionbar button {
+.functionbar .toolbar>button {
   line-height: inherit;
 }
 

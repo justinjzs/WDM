@@ -6,7 +6,7 @@ export default class New extends Component {
     this.textFocus = this.textFocus.bind(this);
   }
   componentDidMount() {
-    $('#newFolder').on('shown.bs.modal', this.textFocus);
+    $('#newFolder').on('shown.bs.modal', () => alert('123'));
   }
   componentWillUnmount() {
     $('#newFolder').off('shown.bs.modal', this.textFocus);

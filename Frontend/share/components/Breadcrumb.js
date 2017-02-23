@@ -27,7 +27,7 @@ const Breadcrumb = ({
   })
 
   return (
-    <ul className="breadcrumb">
+    <ul className="breadcrumb col-sm-8">
       {folders.map(folder => (
         folder.active ? 
          <li className="active" key={folder.path} > {folder.name} </li> :

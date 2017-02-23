@@ -57,7 +57,6 @@ class Header extends Component {
             </div>
           </div>
         </div>
-
         <div className="collapse navbar-collapse row" id="max-768">
           <div className="nav navbar-nav col-sm-6">
             <div className="input-group navbar-form">

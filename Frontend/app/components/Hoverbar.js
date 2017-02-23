@@ -45,9 +45,9 @@ class Hoverbar extends Component {
     return false;
   }
   render() {
-    const {fileKey, addShareLink, resetAddShare, name, tree} = this.props;
+    const {fileKey, addShareLink, resetAddShare, name, tree, show} = this.props;
     return (
-      <div className="hoverbar">
+      <div className="hoverbar" style={!show ? {marginLeft: '-9999px', position: 'absolute'} : {marginTop: '4px'}}>
         <a href="#" data-toggle="modal" data-target={`#hover-share-${fileKey}`} >
         <span className="icon-share hover-icon blue-icon"></span></a>
         <AddShare id={`hover-share-${fileKey}`}
@@ -66,7 +66,8 @@ class Hoverbar extends Component {
             </a>
             </li>
             <li><a href="#" data-toggle="modal" data-target={`#hover-move-${fileKey}`}>
-              <span className="icon-moveto blue-icon"></span><FormattedMessage id="move_To" />
+              <span className="icon-moveto blue-icon"></span>
+              <FormattedMessage id="move_To" />
             </a></li>
             <li><a href="#" onClick={e => this.deleteHandler()}>
             <span className="icon-delete blue-icon"></span>

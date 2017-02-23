@@ -3,8 +3,9 @@
   background-color: white;
   border-width: 2px 0px 0px 0px;;
   border-color: #3698b3;
+  border-style: solid;
+  padding: 10px;
 }
-
 .logo{
   max-height: 30px;
   max-width: 112px;
@@ -17,22 +18,9 @@
   left: 5px;
   font-size: small;
 }
-.breadcrumb {
-  height: 45px;
-  margin: 0px 0px;;
-  background-color: #fbfbfb;
-  display: inline-block;
-  width: 80%
 
-}
 #Save-div {
   display: inline-block;
-}
-.toolbar {
-  display: inline-block;
-  width: 20%;
-  height: 45px;
-  background-color: #fbfbfb;
 }
 thead {
   border: 1px solid #c7c7c7;
@@ -40,6 +28,26 @@ thead {
 }
 .table>thead>tr>th {
   vertical-align: middle;
+}
+
+.functionbar {
+  background-color: #fbfbfb;
+  margin-left: 0px;
+  margin-right: 0px;
+  height: 52px;
+
+}
+.breadcrumb {
+  background-color: #fbfbfb;
+  margin: 0px 0px;
+  padding: 15px 15px;
+  font-size: 16px;
+}
+.toolbar {
+  padding: 11px 0px;
+}
+.toolbar button {
+  margin-right: 15px;
 }
 
 /*
@@ -117,4 +125,112 @@ thead {
   .cover-container {
     width: 700px;
   }
+}
+
+@font-face {
+  font-family: 'icomoon';
+  src:  url('/fonts/icomoon.eot?6k6kta');
+  src:  url('/fonts/icomoon.eot?6k6kta#iefix') format('embedded-opentype'),
+    url('/fonts/icomoon.ttf?6k6kta') format('truetype'),
+    url('/fonts/icomoon.woff?6k6kta') format('woff'),
+    url('/fonts/icomoon.svg?6k6kta#icomoon') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+
+[class^="icon-"], [class*=" icon-"] {
+  /* use !important to prevent issues with browser extensions that change fonts */
+  font-family: 'icomoon' !important;
+  speak: none;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.icon-cancelshare:before {
+  content: "\e900";
+  font-size: larger;
+  vertical-align: middle;
+}
+.icon-checkbox:before {
+  content: "\e901";
+}
+.icon-checkbox_check:before {
+  content: "\e902";
+  font-size: larger;
+  vertical-align: middle;
+}
+.icon-delete:before {
+  content: "\e903";
+  font-size: larger;
+  vertical-align: middle;
+}
+.icon-download:before {
+  content: "\e904";
+  font-size: larger;
+  vertical-align: middle;
+}
+.icon-folder:before {
+  content: "\e905";
+  font-size: larger;
+  vertical-align: middle;
+}
+.icon-more:before {
+  content: "\e906";
+  font-size: larger;
+  vertical-align: middle;
+}
+.icon-moveto:before {
+  content: "\e907";
+  font-size: larger;
+  vertical-align: middle;
+}
+.icon-new:before {
+  content: "\e908";
+  font-size: larger;
+  vertical-align: middle;
+}
+.icon-rename:before {
+  content: "\e909";
+  font-size: larger;
+  vertical-align: middle;
+}
+.icon-saveas:before {
+  content: "\e90a";
+  font-size: larger;
+  vertical-align: middle;
+}
+.icon-search:before {
+  content: "\e90b";
+  font-size: larger;
+  vertical-align: middle;
+}
+.icon-share:before {
+  content: "\e90c";
+  font-size: larger;
+  vertical-align: middle;
+}
+.icon-upload:before {
+  content: "\e90d";
+  font-size: larger;
+  vertical-align: middle;
+}
+.icon-uploadfolder:before {
+  content: "\e90e";
+  font-size: larger;
+  vertical-align: middle;
+
+}
+
+.green-icon {
+  color: #5a8130;
+}
+
+.yellow-icon {
+  color: #FFCC66;
 }

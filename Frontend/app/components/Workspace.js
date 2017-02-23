@@ -64,7 +64,6 @@ class Workspace extends Component {
 
     return (
       <ContextMenuTrigger attributes={{ className: 'table-responsive workspace' }} id="under-table">
-        <Displaybar {...this.props} />
         <table className="table table-hover" >
           <thead>
             <tr>
@@ -143,7 +142,6 @@ class Workspace extends Component {
 Workspace.propTypes = {
   currentFiles: PropTypes.array.isRequired,
   currentPath: PropTypes.string.isRequired,
-  map: PropTypes.object.isRequired,
   isSearch: PropTypes.bool.isRequired,
   loadFilesHandler: PropTypes.func.isRequired,
   selectFile: PropTypes.func.isRequired,
@@ -160,7 +158,6 @@ Workspace.propTypes = {
 const mapStateToProps = state => ({
   currentFiles: merge({}, state.workspace.currentFiles, { clone: true }),
   currentPath: state.workspace.currentPath,
-  map: merge({}, state.tree.map, { clone: true }),
   isSearch: state.workspace.isSearch,
   message: merge({}, state.message, {clone: true})
 })

@@ -10,15 +10,15 @@ class Row extends Component {
     this.state = {
       hover: false
     }
-    this.mouseOver = this.mouseOver.bind(this);
-    this.mouseOut = this.mouseOut.bind(this);
+    this.mouseEnter = this.mouseEnter.bind(this);
+    this.mouseLeave = this.mouseLeave.bind(this);
   }
-  mouseOver() {
+  mouseEnter() {
     this.setState({
       hover: true
     })
   }
-  mouseOut() {
+  mouseLeave() {
     this.setState({
       hover: false
     })
@@ -45,13 +45,13 @@ class Row extends Component {
             <label></label>
           </div>
         </td>
-        <td >
+        <td onMouseEnter={() => this.mouseEnter()} onMouseLeave ={() => this.mouseLeave()}>
           <img src={`/css/svg/${icon}`} className="icon" />
           {isdir ?
             <a href="javascript:void(0)" onClick={() => clickHandler(path)} ><span>{name}</span></a> :
             <span>{name}</span>}
-          {<Hoverbar fileKey={fileKey} name={name} />}
-
+           <Hoverbar show={this.state.hover} fileKey={fileKey} name={name} />
+        
         </td>
         <td > {size || '-'} </td>
         <td > {lastTime} </td>

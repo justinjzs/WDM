@@ -32,9 +32,11 @@ class App extends Component {
       <IntlProvider locale={navigator.language} messages={getIntlMessages()}>
         <div className="App">
           <Header />
-          <Functionbar />
-          <Sidebar />
-          {this.props.children}
+          <Functionbar pathName={this.props.location.pathname} />
+          <div className="body row">
+            <Sidebar />
+            {this.props.children}
+          </div>
         </div>
       </IntlProvider>
     );

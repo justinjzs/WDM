@@ -5,7 +5,7 @@ export default class AddShare extends Component {
   render() {
     const { addShareHandler, addShareLink, resetHandler, id } = this.props;
     return (
-        <div id={id || "addshare"} className="modal fade" ref="modal" role="add share">
+        <div id={id || "addshare"} className="modal fade addshare-modal" ref="modal" role="add share">
           <div className="modal-dialog">
             <div className="modal-content">
               <div className="modal-header">
