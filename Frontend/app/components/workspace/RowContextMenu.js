@@ -8,7 +8,7 @@ import {
   fetchAddShare,
   ajaxDelete,
   fetchRename
-} from '../actions'
+} from '../../actions'
 
 class RowContextMenu extends Component {
   constructor(props) {

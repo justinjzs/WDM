@@ -7,7 +7,7 @@ import {
   fetchAuth,
   fetchAuthWithSecret
 } from './actions'
-import $ from 'jquery'
+
 import 'bootstrap'
 import '../asset/css/share.css'
 //import '../asset/css/libs/bootstrap.min.css'

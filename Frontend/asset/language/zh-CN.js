@@ -8,6 +8,7 @@ const zh = {
   search_Result: '搜索结果',
   new: '新建',
   new_Folder: '新建文件夹',
+  new_Name: '新文件名',
   upload: '上传',
   upload_Files: '上传文件',
   upload_Folder: '上传文件夹',

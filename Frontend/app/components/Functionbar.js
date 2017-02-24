@@ -1,11 +1,11 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux'
-import New from './New'
-import UploadFiles from './UploadFiles'
-import UploadDir from './UploadDir'
-import Breadcrumb from './Breadcrumb'
-import Toolbar from './Toolbar'
-import Unshare from './Unshare'
+import New from './operations/New'
+import UploadFiles from './operations/UploadFiles'
+import UploadDir from './operations/UploadDir'
+import Breadcrumb from './functionbar/Breadcrumb'
+import Toolbar from './functionbar/Toolbar'
+import Unshare from './operations/Unshare'
 import merge from 'deepmerge'
 import { FormattedMessage } from 'react-intl'
 import {

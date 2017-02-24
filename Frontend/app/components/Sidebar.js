@@ -6,7 +6,7 @@ import {
   fetchAllFolders,
   fetchCurrentFiles
 } from '../actions'
-import Collapse from './Collapse';
+import Collapse from './functionbar/Collapse';
 import { FormattedMessage } from 'react-intl'
 
 class Sidebar extends Component {
@@ -21,18 +21,21 @@ class Sidebar extends Component {
     return (
       <div className="nav-side-menu col-sm-3">
         <i className="fa fa-bars fa-2x toggle-btn" data-toggle="collapse" data-target="#menu-content"></i>
-
         <div className="menu-list">
-
           <ul id="menu-content" className="menu-content collapse out">
-            <Link to="/home"><li data-toggle="collapse" data-target="#home" onDoubleClick={e => this.props.loadFilesHandler()} className="collapsed">
-              <span className="sidebar-description">
-                <FormattedMessage id="home" />
-              </span>
-              <img src={src} className="sidebar-icon" />
-            </li></Link>
+            <Link to="/home">
+              <li data-toggle="collapse" data-target="#home"
+                onDoubleClick={e => this.props.loadFilesHandler()}
+                className="collapsed">
+                <span className="sidebar-description">
+                  <FormattedMessage id="home" />
+                </span>
+                <img src={src} className="sidebar-icon" />
+              </li></Link>
             <ul id="home" className="collapse">
-              <Collapse level={1} currentFolder={key} dClickHandler={this.props.loadFilesHandler} folders={this.props.tree.home.children} />
+              <Collapse level={1} currentFolder={key}
+                dClickHandler={this.props.loadFilesHandler}
+                folders={this.props.tree.home.children} />
             </ul>
             <Link to="/home/share"><li>
               <img src="/css/svg/share_white.svg" className="sidebar-icon" />

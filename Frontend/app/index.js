@@ -8,7 +8,8 @@ import thunk from 'redux-thunk';
 import createLogger from 'redux-logger';
 import reducer from './reducers';
 import Workspace from './components/Workspace';
-import Share from './components/Share';
+import Sharespace from './components/Sharespace';
+import 'bootstrap'
 
 const middleware = [thunk, createLogger()];
 
@@ -23,7 +24,7 @@ ReactDOM.render(
     <Router history={browserHistory} >
       <Route path='/home' component={App}>
         <IndexRoute component={Workspace} />
-        <Route path='share' component={Share} />
+        <Route path='share' component={Sharespace} />
         <Route path='**' component={Workspace} />
       </Route>
     </Router>

@@ -65,15 +65,21 @@ class Header extends Component {
                   <span id="search_concept">{searchText}</span> <span className="caret"></span>
                 </button>
                 <ul className="dropdown-menu" role="menu">
-                  <li><a href="javascript:void(0)" onClick={() => this.rangeHandler(intl.formatMessage({ id: 'search_This_Folder' }))}>
+                  <li><a href="javascript:void(0)"
+                    onClick={() => this.rangeHandler(intl.formatMessage({ id: 'search_This_Folder' }))}>
                     <FormattedMessage id='search_This_Folder' /></a></li>
-                  <li><a href="javascript:void(0)" onClick={() => this.rangeHandler(intl.formatMessage({ id: 'search_All_files' }))}>
+                  <li><a href="javascript:void(0)"
+                    onClick={() => this.rangeHandler(intl.formatMessage({ id: 'search_All_files' }))}>
                     <FormattedMessage id='search_All_files' /></a></li>
                 </ul>
               </div>
-              <input type="text" className="form-control" id="search" value={inputText} onChange={this.inputHandler} placeholder={intl.formatMessage({ id: 'search_Input_Placeholder' })} />
+              <input type="text" className="form-control" id="search"
+                value={inputText} onChange={this.inputHandler}
+                placeholder={intl.formatMessage({ id: 'search_Input_Placeholder' })} />
               <div className="input-group-btn">
-                <button className="btn btn-default" type="button" id="submit" onClick={() => this.searchHandler()} ><Link to="/home/search"><img src="/css/svg/search.svg" /></Link></button>
+                <button className="btn btn-default" type="button" id="submit" onClick={() => this.searchHandler()} >
+                  <Link to="/home/search"><img src="/css/svg/search.svg" /></Link>
+                </button>
               </div>
             </div>
           </div>
@@ -85,10 +91,10 @@ class Header extends Component {
                 <FormattedMessage id='greeting'
                   description='Greeting to the user'
                   values={{ userName: <b>{userName}</b> }} /></a>
-                <ul className="dropdown-menu" role="user menu">
-                  <li><a href="/logout">Lou out</a></li>
-                </ul>
-              </li>
+              <ul className="dropdown-menu" role="user menu">
+                <li><a href="/logout">Lou out</a></li>
+              </ul>
+            </li>
           </ul>
         </div>
       </nav>

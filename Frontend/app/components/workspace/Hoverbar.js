@@ -8,11 +8,11 @@ import {
   ajaxDelete,
   fetchRename,
   fetchMove
-} from '../actions'
+} from '../../actions'
 import merge from 'deepmerge'
-import AddShare from './AddShare'
-import Rename from './Rename'
-import Move from './Move'
+import AddShare from '../operations/AddShare'
+import Rename from '../operations/Rename'
+import Move from '../operations/Move'
 
 class Hoverbar extends Component {
   constructor(props) {

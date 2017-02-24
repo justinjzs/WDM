@@ -1,12 +1,10 @@
 import React, { Component, PropTypes } from 'react';
-import Row from './Row';
-import Displaybar from './Displaybar';
+import Row from './workspace/Row';
 import { connect } from 'react-redux'
 import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
 import getIconName from '../utils/getIconName'
 import formatBytes from '../utils/formatBytes'
-import Message from './Message'
-import New from './New'
+import Message from './workspace/Message'
 import { FormattedMessage } from 'react-intl'
 import {
   fetchCurrentFiles,
@@ -63,13 +61,15 @@ class Workspace extends Component {
  } = this.props;
 
     return (
-      <ContextMenuTrigger attributes={{ className: 'table-responsive workspace' }} id="under-table">
+      <ContextMenuTrigger attributes={{ className: 'table-responsive workspace' }} 
+                          id="under-table">
         <table className="table table-hover" >
           <thead>
             <tr>
               <th width="50px">
                 <div className="checkbox">
-                  <input type='checkbox' className="center-checkbox" className="styled" onChange={e => this.checkAllHandler(e)} />
+                  <input type='checkbox' className="center-checkbox styled" 
+                         onChange={e => this.checkAllHandler(e)} />
                   <label></label>
                 </div>
               </th>
@@ -132,7 +132,6 @@ class Workspace extends Component {
             <FormattedMessage id="upload_Folder" />
           </MenuItem>
         </ContextMenu>
-        <New mkdirHandler={this.mkdirHandler()} />
       </ContextMenuTrigger>
     );
   }

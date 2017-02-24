@@ -7,7 +7,9 @@ export default class UploadFiles extends Component {
     return ( 
       <label id="upload-files" htmlFor="file">
         <input id='file' type='file'  name='files'  multiple='multiple' onChange={() => uploadHandler()}/>
-        <span className="icon-upload green-icon in-label"></span><span className="in-label"><FormattedMessage id="upload_Files" /></span>
+        <span className="icon-upload green-icon in-label"></span><span className="in-label">
+          <FormattedMessage id="upload_Files" />
+        </span>
       </label>
     )
   }

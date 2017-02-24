@@ -7,8 +7,10 @@ import getFormatTime from './utils/getFormatTime'
 import { Router, Route, browserHistory } from 'react-router'
 import { IntlProvider, addLocaleData } from 'react-intl'
 import localeZh from 'react-intl/locale-data/zh'
-import en from '../asset/language/en_US'
-import zh from '../asset/language/zh_CN'
+import en from '../asset/language/en-US'
+import zh from '../asset/language/zh-CN'
+
+
 addLocaleData([...localeZh]);
 
 const getIntlMessages = () => {

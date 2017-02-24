@@ -1,7 +1,7 @@
 import React, { Component, PropTypes } from 'react'
-import Rename from './Rename';
-import Move from './Move'
-import AddShare from './AddShare'
+import Rename from '../operations/Rename';
+import Move from '../operations/Move'
+import AddShare from '../operations/AddShare'
 import { connect } from 'react-redux'
 import { FormattedMessage } from 'react-intl'
 import {
@@ -11,9 +11,9 @@ import {
   fetchRename,
   fetchAddShare,
   resetAddShare
-} from '../actions'
+} from '../../actions'
 import merge from 'deepmerge'
-import getSelectedKeys from '../utils/getSelectedKeys'
+import getSelectedKeys from '../../utils/getSelectedKeys'
 
 class Toolbar extends Component {
   constructor(props) {
@@ -55,23 +55,28 @@ class Toolbar extends Component {
     return (
       <div className="toolbar">
         <button type="button" className="btn btn-default btn-sm tool" data-toggle="modal" data-target="#addshare">
-          <img src="/css/svg/share_green.svg" className="funcbarsvg" /><FormattedMessage id='share' />
+          <img src="/css/svg/share_green.svg" className="funcbarsvg" />
+          <FormattedMessage id='share' />
         </button>
         <AddShare addShareHandler={this.addShareHandler()}
           resetHandler={resetAddShare}
           addShareLink={addShareLink} />
         <button type="button" className="btn btn-default btn-sm tool" onClick={() => this.downloadHandler()}>
-          <img src="/css/svg/download.svg" className="funcbarsvg" /> <FormattedMessage id='download' />
+          <img src="/css/svg/download.svg" className="funcbarsvg" />
+          <FormattedMessage id='download' />
         </button>
         <button type="button" className="btn btn-default btn-sm tool" onClick={() => this.deleteHandler()}>
-          <img src="/css/svg/delete.svg" className="funcbarsvg" /> <FormattedMessage id='delete' />
+          <img src="/css/svg/delete.svg" className="funcbarsvg" />
+          <FormattedMessage id='delete' />
         </button>
         <button type="button" className="btn btn-default btn-sm tool" data-toggle="modal" data-target="#moveto">
-          <img src="/css/svg/moveto.svg" className="funcbarsvg" /> <FormattedMessage id='move_To' />
+          <img src="/css/svg/moveto.svg" className="funcbarsvg" />
+          <FormattedMessage id='move_To' />
         </button>
         <Move tree={tree} moveHandler={this.moveHandler()} />
         {show || <button type="button" className="btn btn-default btn-sm tool" data-toggle="modal" data-target="#rename">
-          <img src="/css/svg/rename.svg" className="funcbarsvg" /> <FormattedMessage id='rename' />
+          <img src="/css/svg/rename.svg" className="funcbarsvg" />
+          <FormattedMessage id='rename' />
         </button>}
         <Rename renameHandler={this.renameHandler()} name={name} />
       </div>

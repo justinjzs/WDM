@@ -8,8 +8,8 @@ import createLogger from 'redux-logger';
 import reducer from './reducers';
 import { IntlProvider, addLocaleData } from 'react-intl'
 import localeZh from 'react-intl/locale-data/zh'
-import en from '../asset/language/en_US'
-import zh from '../asset/language/zh_CN'
+import en from '../asset/language/en-US'
+import zh from '../asset/language/zh-CN'
 
 addLocaleData([...localeZh]);
 

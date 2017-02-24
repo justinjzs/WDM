@@ -7,7 +7,8 @@ export default class Unshare extends Component {
     return (
       <div id="unshare-div">
       <button type="button" className="btn btn-default btn-sm tool" data-toggle="modal" data-target="#unshare">
-          <span className="icon-cancelshare functionbar green-icon"></span> <FormattedMessage id="unshare" /> 
+          <span className="icon-cancelshare functionbar green-icon"></span>
+          <FormattedMessage id="unshare" /> 
         </button>
       <div id="unshare" className="modal fade" ref="modal" role="unshare">
         <div className="modal-dialog modal-sm">
