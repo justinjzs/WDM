@@ -6,7 +6,7 @@ import {
   fetchAllFolders,
   fetchCurrentFiles
 } from '../actions'
-import Collapse from './functionbar/Collapse';
+import Collapse from './Collapse';
 import { FormattedMessage } from 'react-intl'
 
 class Sidebar extends Component {
@@ -19,7 +19,7 @@ class Sidebar extends Component {
 
     let src = key ? "/css/svg/folder_white_16pix.svg" : "/css/svg/folder_green_16pix.svg";
     return (
-      <div className="nav-side-menu col-sm-3">
+      <div className="nav-side-menu col-xs-3">
         <i className="fa fa-bars fa-2x toggle-btn" data-toggle="collapse" data-target="#menu-content"></i>
         <div className="menu-list">
           <ul id="menu-content" className="menu-content collapse out">

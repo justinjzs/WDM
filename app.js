@@ -24,12 +24,12 @@ const shareSchema = require('./graphql/shareschema');
 
 const app = module.exports = koa();
 
-const compiler = webpack(config);
-app.use(webpackDevMiddleware(compiler, {
-  noInfo: false,
-  publicPath: config.output.publicPath
-}));
-app.use(webpackHotMiddleware(compiler));
+// const compiler = webpack(config);
+// app.use(webpackDevMiddleware(compiler, {
+//   noInfo: false,
+//   publicPath: config.output.publicPath
+// }));
+// app.use(webpackHotMiddleware(compiler));
 
 app.use(logger());  //日志
 app.use(favicon(path.join(__dirname, './public/favicon.ico'))); //favicon

@@ -15,18 +15,19 @@ export default class AddShare extends Component {
             {addShareLink.link ?
               <div className="modal-body">
                 <div><a href={`http://localhost:3000/share?addr=${addShareLink.link}`}>
-                  <FormattedMessage id="new_Share_Link" values={{ addr: addShareLink.link }} /></a></div>
+                  <FormattedMessage id="new_Share_Link" values={{ addr: addShareLink.link }} />
+                </a></div>
                 <div>{addShareLink.secret && <FormattedMessage id="new_Share_Serect" values={{ secret: addShareLink.secret }} />}</div>
               </div> :
               <div className="modal-body">
                 <div>
-                  <button className="btn btn-primary btn-sm" onClick={() => addShareHandler(false)}>
+                  <button type="button" className="btn btn-primary btn-sm" onClick={() => addShareHandler(false)}>
                     <FormattedMessage id="create_Public_Link" />
                   </button>
                   <FormattedMessage id="public_Link_Description" />
                 </div>
                 <div>
-                  <button className="btn btn-primary btn-sm" onClick={() => addShareHandler(true)}>
+                  <button type="button" className="btn btn-primary btn-sm" onClick={() => addShareHandler(true)}>
                     <FormattedMessage id="create_Secret_Link" />
                   </button>
                   <FormattedMessage id="secret_Link_Description" />

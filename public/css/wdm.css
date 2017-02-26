@@ -288,6 +288,18 @@ tr {
     border-top: 1px #e5e5e5 solid;
   }
 }
+@media (max-width: 768px) {
+  .workspace {
+    position: absolute;
+    top: 130px;
+    left: 35px;
+  }
+}
+.navbar-collapse .col-sm-6,
+#max-768 {
+  z-index:2000;
+  background-color: white;
+}
 .nav-side-menu:hover {
   margin-left: 0px;
 }
@@ -296,6 +308,7 @@ tr {
   border-bottom-width: 0px;
 }
 .nav-side-menu {
+  z-index:2000;
   overflow: auto;
   font-family: verdana;
   font-size: 12px;

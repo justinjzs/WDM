@@ -74,7 +74,7 @@ class Functionbar extends Component {
     const isShare = pathName === '/home/share';
     return (
       <div className="functionbar row">
-        <div className="new-upload col-sm-3">
+        <div className="new-upload col-xs-3">
           <button type="button" id="new" className="btn btn-default btn-sm" data-toggle="modal" data-target="#newFolder">
             <div className="in-functionbar">
               <span className="icon-new white-icon"> </span>
