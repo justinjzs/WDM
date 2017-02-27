@@ -2,10 +2,10 @@ import React from 'react'
 import { expect } from 'chai'
 import { mount, shallow } from 'enzyme'
 import { IntlProvider } from 'react-intl'
-import en from '../../../Frontend/asset/language/en-US'
+import en from '../../Frontend/asset/language/en-US'
 import { FormattedMessage } from 'react-intl'
 import sinon from 'sinon'
-import Move from '../../../Frontend/app/components/operations/Move'
+import Move from '../../Frontend/app/components/operations/Move'
 
 describe('<Move />', () => {
   

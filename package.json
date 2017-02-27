@@ -4,8 +4,8 @@
   "description": "document management based on Web",
   "main": "index.js",
   "scripts": {
-    "test": " SET NODE_ENV=test && mocha ./test/*/*.test.js ",
-    "react-test": "SET NODE_ENV=test && mocha test/react/setup.js --compilers js:babel-core/register  test/react/*/*.test.js",
+    "test": " SET NODE_ENV=test && mocha  ./test/*/*.test.js ",
+    "react-test": "SET NODE_ENV=test && mocha react-test/setup.js --compilers js:babel-core/register  react-test/*/*.test.js",
     "start": "webpack && node app.js",
     "dbinit": "node ./config/dbinit.js"
   },
@@ -47,6 +47,8 @@
     "babel-loader": "^6.2.10",
     "babel-plugin-react-transform": "^2.0.2",
     "babel-plugin-transform-object-rest-spread": "^6.23.0",
+    "babel-plugin-transform-regenerator": "^6.22.0",
+    "babel-polyfill": "^6.23.0",
     "babel-preset-es2015": "^6.22.0",
     "babel-preset-latest": "^6.16.0",
     "babel-preset-react": "^6.16.0",

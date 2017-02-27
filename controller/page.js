@@ -1,5 +1,6 @@
 const views = require('co-views');
 const path = require('path');
+require('babel-polyfill');
 //const fs = require('co-fs');
 
 const render =  views(path.join(__dirname, '../views'), {
